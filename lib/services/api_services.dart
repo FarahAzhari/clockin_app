@@ -1,0 +1,524 @@
+// lib/services/api_service.dart
+import 'dart:convert';
+
+import 'package:clockin_app/models/app_models.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ApiService {
+  static const String _baseUrl = 'https://appabsensi.mobileprojp.com/api';
+  static String? _token;
+
+  // Initialize token from SharedPreferences
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('token');
+  }
+
+  // Save token to SharedPreferences
+  static Future<void> _saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    _token = token;
+  }
+
+  // Clear token from SharedPreferences
+  static Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    _token = null;
+  }
+
+  // Helper to get token (for external use, e.g., SplashScreen)
+  static String? getToken() {
+    return _token;
+  }
+
+  // Helper to get headers with Authorization token
+  Map<String, String> _getHeaders({bool includeAuth = false}) {
+    final headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    };
+    if (includeAuth && _token != null) {
+      headers['Authorization'] = 'Bearer $_token';
+    }
+    return headers;
+  }
+
+  // --- Auth Endpoints ---
+
+  Future<ApiResponse<AuthData>> register({
+    required String name,
+    required String email,
+    required String password,
+    required int batchId,
+    required int trainingId,
+  }) async {
+    final url = Uri.parse('$_baseUrl/register');
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'password': password,
+          'batch_id': batchId,
+          'training_id': trainingId,
+        }),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final authResponse = AuthResponse.fromJson(responseBody);
+        if (authResponse.data != null) {
+          await _saveToken(authResponse.data!.token);
+        }
+        return ApiResponse(
+          message: authResponse.message,
+          data: authResponse.data,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Registration failed',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<AuthData>> login({
+    required String email,
+    required String password,
+  }) async {
+    final url = Uri.parse('$_baseUrl/login');
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final authResponse = AuthResponse.fromJson(responseBody);
+        if (authResponse.data != null) {
+          await _saveToken(authResponse.data!.token);
+        }
+        return ApiResponse(
+          message: authResponse.message,
+          data: authResponse.data,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Login failed',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // --- Absence Endpoints ---
+
+  Future<ApiResponse<Absence>> checkIn({
+    required double checkInLat,
+    required double checkInLng,
+    required String checkInAddress,
+    required String status, // "masuk" or "izin"
+    String? alasanIzin, // Required if status is "izin"
+  }) async {
+    final url = Uri.parse('$_baseUrl/absen/check-in');
+    try {
+      final body = {
+        'check_in_lat': checkInLat,
+        'check_in_lng': checkInLng,
+        'check_in_address': checkInAddress,
+        'status': status,
+      };
+      if (status == 'izin' && alasanIzin != null) {
+        body['alasan_izin'] = alasanIzin;
+      }
+
+      final response = await http.post(
+        url,
+        headers: _getHeaders(includeAuth: true),
+        body: jsonEncode(body),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: Absence.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Check-in failed',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<Absence>> checkOut({
+    required double checkOutLat,
+    required double checkOutLng,
+    required String checkOutAddress,
+  }) async {
+    final url = Uri.parse('$_baseUrl/absen/check-out');
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(includeAuth: true),
+        body: jsonEncode({
+          'check_out_lat': checkOutLat,
+          'check_out_lng': checkOutLng,
+          'check_out_address': checkOutAddress,
+        }),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: Absence.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Check-out failed',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<AbsenceToday>> getAbsenceToday() async {
+    final url = Uri.parse('$_baseUrl/absen/today');
+    try {
+      final response = await http.get(
+        url,
+        headers: _getHeaders(includeAuth: true),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: AbsenceToday.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get today\'s absence data',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<AbsenceStats>> getAbsenceStats() async {
+    final url = Uri.parse('$_baseUrl/absen/stats');
+    try {
+      final response = await http.get(
+        url,
+        headers: _getHeaders(includeAuth: true),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: AbsenceStats.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get absence statistics',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<Absence>> deleteAbsence(int id) async {
+    final url = Uri.parse('$_baseUrl/absen/$id');
+    try {
+      final response = await http.delete(
+        url,
+        headers: _getHeaders(includeAuth: true),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: Absence.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to delete absence data',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<List<Absence>>> getAbsenceHistory({
+    String? startDate,
+    String? endDate,
+  }) async {
+    final Map<String, String> queryParams = {};
+    if (startDate != null) {
+      queryParams['start'] = startDate;
+    }
+    if (endDate != null) {
+      queryParams['end'] = endDate;
+    }
+
+    final url = Uri.parse(
+      '$_baseUrl/absen/history',
+    ).replace(queryParameters: queryParams);
+    try {
+      final response = await http.get(
+        url,
+        headers: _getHeaders(includeAuth: true),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        List<Absence> history = (responseBody['data'] as List)
+            .map((e) => Absence.fromJson(e))
+            .toList();
+        return ApiResponse(
+          message: responseBody['message'],
+          data: history,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get absence history',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // --- User Profile Endpoints ---
+
+  Future<ApiResponse<User>> getProfile() async {
+    final url = Uri.parse('$_baseUrl/profile');
+    try {
+      final response = await http.get(
+        url,
+        headers: _getHeaders(includeAuth: true),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: User.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get profile data',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<User>> editProfile({required String name}) async {
+    final url = Uri.parse('$_baseUrl/profile');
+    try {
+      final response = await http.put(
+        url,
+        headers: _getHeaders(includeAuth: true),
+        body: jsonEncode({'name': name}),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: User.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to update profile',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<List<User>>> getAllUsers() async {
+    final url = Uri.parse('$_baseUrl/users');
+    try {
+      final response = await http.get(
+        url,
+        headers: _getHeaders(
+          includeAuth: true,
+        ), // Assuming this endpoint requires authentication
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        List<User> users = (responseBody['data'] as List)
+            .map((e) => User.fromJson(e))
+            .toList();
+        return ApiResponse(
+          message: responseBody['message'],
+          data: users,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get all users',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // --- Training Endpoints ---
+
+  Future<ApiResponse<List<Training>>> getTrainings() async {
+    final url = Uri.parse('$_baseUrl/trainings');
+    try {
+      final response = await http.get(url, headers: _getHeaders());
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        List<Training> trainings = (responseBody['data'] as List)
+            .map((e) => Training.fromJson(e))
+            .toList();
+        return ApiResponse(
+          message: responseBody['message'],
+          data: trainings,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get trainings',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  Future<ApiResponse<Training>> getTrainingDetail(int id) async {
+    final url = Uri.parse('$_baseUrl/trainings/$id');
+    try {
+      final response = await http.get(url, headers: _getHeaders());
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: Training.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get training detail',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // --- Batch Endpoints --- NEW METHOD
+  Future<ApiResponse<List<Batch>>> getBatches() async {
+    final url = Uri.parse('$_baseUrl/batches');
+    try {
+      // The Postman collection shows this endpoint requires a token.
+      // Adjust if your actual API allows public access.
+      final response = await http.get(
+        url,
+        headers: _getHeaders(includeAuth: true),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        List<Batch> batches = (responseBody['data'] as List)
+            .map((e) => Batch.fromJson(e))
+            .toList();
+        return ApiResponse(
+          message: responseBody['message'],
+          data: batches,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to get batches',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+}
