@@ -234,23 +234,28 @@ class ApiService {
 
   // --- Absence Endpoints ---
 
+  // Modified checkIn to handle both 'masuk' and 'izin' statuses
+  // Location parameters are now nullable as they are not needed for 'izin'
   Future<ApiResponse<Absence>> checkIn({
-    required double checkInLat,
-    required double checkInLng,
-    required String checkInAddress,
+    double? checkInLat, // Made nullable
+    double? checkInLng, // Made nullable
+    String? checkInAddress, // Made nullable
     required String status, // "masuk" or "izin"
     String? alasanIzin, // Required if status is "izin"
+    String? requestDate, // New: Required if status is "izin"
   }) async {
     final url = Uri.parse('$_baseUrl/absen/check-in');
     try {
-      final body = {
-        'check_in_lat': checkInLat,
-        'check_in_lng': checkInLng,
-        'check_in_address': checkInAddress,
-        'status': status,
-      };
-      if (status == 'izin' && alasanIzin != null) {
-        body['alasan_izin'] = alasanIzin;
+      final body = <String, dynamic>{'status': status};
+
+      if (status == 'masuk') {
+        if (checkInLat != null) body['check_in_lat'] = checkInLat;
+        if (checkInLng != null) body['check_in_lng'] = checkInLng;
+        if (checkInAddress != null) body['check_in_address'] = checkInAddress;
+      } else if (status == 'izin') {
+        if (alasanIzin != null) body['alasan_izin'] = alasanIzin;
+        if (requestDate != null)
+          body['tanggal_izin'] = requestDate; // Add tanggal_izin for 'izin'
       }
 
       final response = await http.post(

@@ -67,15 +67,17 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<Absence> fetchedAbsences = response.data!;
-        // Sort by check-in date in descending order (latest first)
+        // Sort by created_at date in descending order (latest first)
         fetchedAbsences.sort((a, b) {
-          // Handle null checkIn dates: nulls come last
-          if (a.checkIn == null && b.checkIn == null) return 0;
-          if (a.checkIn == null)
+          // Handle null createdAt dates: nulls come last
+          if (a.createdAt == null && b.createdAt == null) return 0;
+          if (a.createdAt == null)
             return 1; // a is null, b is not, a comes after b
-          if (b.checkIn == null)
+          if (b.createdAt == null)
             return -1; // b is null, a is not, b comes after a
-          return b.checkIn!.compareTo(a.checkIn!); // Both are non-null, compare
+          return b.createdAt!.compareTo(
+            a.createdAt!,
+          ); // Both are non-null, compare
         });
         return fetchedAbsences;
       } else {
@@ -181,13 +183,17 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       }
     }
 
-    // Show house icon only for regular 'masuk' entries
+    // Show check icon only for regular 'masuk' entries
     bool showCheckIcon =
         absence.status?.toLowerCase() == 'masuk'; // Safely call toLowerCase
 
-    final String formattedDate = DateFormat(
-      'E, MMM d, yyyy', // Corrected format string
-    ).format(absence.checkIn!); // Null assertion added as checkIn is used here
+    // Determine the date to display: use checkIn for attendance, createdAt for requests
+    final DateTime? displayDate = isRequestType
+        ? absence.createdAt
+        : absence.checkIn;
+    final String formattedDate = displayDate != null
+        ? DateFormat('E, MMM d,EEEE').format(displayDate)
+        : 'N/A'; // Fallback for date
 
     return Card(
       color: cardBackgroundColor,
@@ -249,11 +255,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                 ),
                               Text(
                                 isRequestType
-                                    ? absence.alasanIzin
-                                              ?.split(':')
-                                              .first
-                                              .toUpperCase() ??
-                                          'IZIN' // Display the type from alasan_izin
+                                    ? 'IZIN' // Display "Izin" for request types
                                     : absence.status?.toUpperCase() ??
                                           'N/A', // Safely call toUpperCase
                                 style: TextStyle(
@@ -275,7 +277,6 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                         children: [
                           _buildTimeColumn(
                             absence.checkIn?.toLocal().toString().substring(
-                                  // Safely call toLocal
                                   11,
                                   19,
                                 ) ??
@@ -481,7 +482,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                       children: [
                         Text(
                           DateFormat(
-                            'MMM yyyy', // Corrected format string
+                            'MMM', // Corrected format string
                           ).format(_selectedMonth).toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
@@ -520,7 +521,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   if (attendances.isEmpty) {
                     return Center(
                       child: Text(
-                        'No attendance records found for ${DateFormat('MMMM yyyy').format(_selectedMonth)}.',
+                        'No attendance records found for ${DateFormat('MMMM').format(_selectedMonth)}.',
                       ),
                     );
                   }
