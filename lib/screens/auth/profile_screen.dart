@@ -1,5 +1,4 @@
 // lib/screens/profile/profile_screen.dart
-
 import 'package:clockin_app/constants/app_colors.dart';
 import 'package:clockin_app/models/app_models.dart';
 import 'package:clockin_app/screens/auth/edit_profile_screen.dart';
@@ -126,12 +125,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Use training_title from API for designation
     final String designation = _currentUser?.training_title ?? 'Employee';
 
-    // Format the joinedDate based on createdAt from User model
+    // Format the joinedDate based on batch.start_date from User model
     String formattedJoinedDate = 'N/A';
-    if (_currentUser?.createdAt != null) {
-      formattedJoinedDate = DateFormat(
-        'MMM dd, yyyy', // Corrected format string for better readability
-      ).format(_currentUser!.createdAt!); // ADDED null assertion (!) here
+    if (_currentUser?.batch?.startDate != null) {
+      try {
+        // Added null assertion (!) to startDate as DateTime.parse expects a non-nullable String
+        final DateTime startDate = DateTime.parse(
+          _currentUser!.batch!.startDate!,
+        );
+        formattedJoinedDate = DateFormat('MMM dd, yyyy').format(startDate);
+      } catch (e) {
+        print('Error parsing batch start date: $e');
+        formattedJoinedDate = 'N/A';
+      }
     }
 
     return Scaffold(
@@ -294,7 +300,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Divider(color: AppColors.border, height: 20),
             _buildDetailRow('Email ID', email),
             if (batchKe != null) ...[
               // Conditionally add batch info
