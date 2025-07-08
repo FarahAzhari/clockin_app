@@ -48,12 +48,14 @@ class ApiService {
 
   // --- Auth Endpoints ---
 
+  // Updated Register method to match new API structure
   Future<ApiResponse<AuthData>> register({
     required String name,
     required String email,
     required String password,
     required int batchId,
     required int trainingId,
+    required String jenisKelamin,
   }) async {
     final url = Uri.parse('$_baseUrl/register');
     try {
@@ -66,6 +68,7 @@ class ApiService {
           'password': password,
           'batch_id': batchId,
           'training_id': trainingId,
+          'jenis_kelamin': jenisKelamin,
         }),
       );
 
@@ -120,6 +123,106 @@ class ApiService {
       } else {
         return ApiResponse.fromError(
           responseBody['message'] ?? 'Login failed',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // New: Request OTP for Forgot Password
+  Future<ApiResponse<void>> forgotPassword({required String email}) async {
+    final url = Uri.parse('$_baseUrl/forgot-password');
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({'email': email}),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'] ?? 'OTP requested successfully',
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to request OTP',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // New: Verify OTP
+  Future<ApiResponse<void>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final url = Uri.parse('$_baseUrl/verify-otp');
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'] ?? 'OTP verified successfully',
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to verify OTP',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // New: Reset Password
+  Future<ApiResponse<void>> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    final url = Uri.parse('$_baseUrl/reset-password');
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({
+          'email': email,
+          'otp': otp,
+          'password': newPassword,
+          'password_confirmation': newPasswordConfirmation,
+        }),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'] ?? 'Password reset successfully',
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to reset password',
           statusCode: response.statusCode,
           errors: responseBody['errors'],
         );
@@ -371,13 +474,29 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<User>> editProfile({required String name}) async {
+  // Updated Edit Profile method to include new fields
+  Future<ApiResponse<User>> editProfile({
+    String? name,
+    String? jenisKelamin, // New optional field
+    String? profilePhoto, // New optional field (base64 string)
+  }) async {
     final url = Uri.parse('$_baseUrl/profile');
     try {
+      final body = <String, dynamic>{};
+      if (name != null) {
+        body['name'] = name;
+      }
+      if (jenisKelamin != null) {
+        body['jenis_kelamin'] = jenisKelamin;
+      }
+      if (profilePhoto != null) {
+        body['profile_photo'] = profilePhoto;
+      }
+
       final response = await http.put(
         url,
         headers: _getHeaders(includeAuth: true),
-        body: jsonEncode({'name': name}),
+        body: jsonEncode(body),
       );
 
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
@@ -488,7 +607,7 @@ class ApiService {
     }
   }
 
-  // --- Batch Endpoints --- NEW METHOD
+  // --- Batch Endpoints ---
   Future<ApiResponse<List<Batch>>> getBatches() async {
     final url = Uri.parse('$_baseUrl/batches');
     try {

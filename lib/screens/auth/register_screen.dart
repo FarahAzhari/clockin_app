@@ -34,6 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _selectedBatchName =
       'Loading Batch...'; // To display the selected batch
   int? _selectedTrainingId;
+  String? _selectedGender;
 
   @override
   void initState() {
@@ -159,6 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: password,
         batchId: _selectedBatchId!,
         trainingId: _selectedTrainingId!,
+        jenisKelamin: _selectedGender!,
       );
 
       setState(() {
@@ -300,6 +302,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         }
                         if (value != _passwordController.text) {
                           return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Jenis Kelamin Dropdown
+                    CustomDropdownInputField<String>(
+                      labelText: 'Select Gender',
+                      hintText: 'Select Gender',
+                      icon: Icons.people_outline,
+                      value: _selectedGender,
+                      items: const [
+                        DropdownMenuItem(value: 'L', child: Text('Laki-laki')),
+                        DropdownMenuItem(value: 'P', child: Text('Perempuan')),
+                      ],
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedGender = newValue;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Please select your gender';
                         }
                         return null;
                       },

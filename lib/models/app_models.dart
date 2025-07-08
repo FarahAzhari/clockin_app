@@ -97,6 +97,8 @@ class User {
   final String email;
   final String? batch_ke; // Added new field
   final String? training_title; // Added new field
+  final String? jenis_kelamin; // Added new field
+  final String? profile_photo; // Added new field
   final DateTime? emailVerifiedAt;
   final DateTime? createdAt; // Made nullable
   final DateTime? updatedAt; // Made nullable
@@ -111,6 +113,8 @@ class User {
     required this.email,
     this.batch_ke, // Added to constructor
     this.training_title, // Added to constructor
+    this.jenis_kelamin, // Added to constructor
+    this.profile_photo, // Added to constructor
     this.emailVerifiedAt,
     this.createdAt, // Removed required
     this.updatedAt, // Removed required
@@ -133,6 +137,8 @@ class User {
           'unknown@example.com', // Added null-aware cast and fallback
       batch_ke: json['batch_ke'] as String?, // Parse new field
       training_title: json['training_title'] as String?, // Parse new field
+      jenis_kelamin: json['jenis_kelamin'] as String?, // Parse new field
+      profile_photo: json['profile_photo'] as String?, // Parse new field
       emailVerifiedAt: json['email_verified_at'] != null
           ? DateTime.parse(json['email_verified_at'] as String)
           : null,
@@ -166,6 +172,8 @@ class User {
       'email': email,
       'batch_ke': batch_ke, // Added to toJson
       'training_title': training_title, // Added to toJson
+      'jenis_kelamin': jenis_kelamin, // Added to toJson
+      'profile_photo': profile_photo, // Added to toJson
       'email_verified_at': emailVerifiedAt?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),

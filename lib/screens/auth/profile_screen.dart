@@ -1,4 +1,5 @@
-import 'dart:io'; // Import for FileImage
+// lib/screens/profile/profile_screen.dart
+import 'dart:convert'; // Import for base64Decode
 
 import 'package:clockin_app/constants/app_colors.dart';
 import 'package:clockin_app/models/app_models.dart';
@@ -115,6 +116,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final String username =
         _currentUser?.name ?? 'Guest User'; // Use .name property
     final String email = _currentUser?.email ?? 'guest@example.com';
+    final String jenisKelamin = _currentUser?.jenis_kelamin == 'L'
+        ? 'Laki-laki'
+        : _currentUser?.jenis_kelamin == 'P'
+        ? 'Perempuan'
+        : 'N/A';
+    final String profilePhotoBase64 = _currentUser?.profile_photo ?? '';
+
     // These fields are not directly available in the current User model.
     // Using default placeholders. You might need to extend your User model
     // or fetch these from a different API endpoint if they exist.
@@ -123,8 +131,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final String bloodGroup = 'N/A';
     // Use training_title from API for designation
     final String designation = _currentUser?.training_title ?? 'Employee';
-    final String profileImageUrl =
-        ''; // No profile image URL in current User model
 
     // Format the joinedDate based on createdAt from User model
     String formattedJoinedDate = 'N/A';
@@ -173,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       username,
                       designation,
                       formattedJoinedDate,
-                      profileImageUrl, // This will be empty, showing fallback icon
+                      profilePhotoBase64, // Pass base64 string
                     ),
                     const SizedBox(height: 20), // Space between sections
                     // User Details Card
@@ -183,6 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       dob,
                       bloodGroup,
                       _currentUser?.batch_ke, // Pass batch_ke
+                      jenisKelamin, // Pass jenisKelamin
                     ),
                     const SizedBox(height: 20),
 
@@ -199,20 +206,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String username,
     String designation,
     String joinedDate,
-    String profileImageUrl,
+    String profilePhotoBase64, // Changed to base64 string
   ) {
-    ImageProvider? imageProvider;
+    ImageProvider<Object>? imageProvider;
 
-    if (profileImageUrl.isNotEmpty) {
-      if (profileImageUrl.startsWith('http')) {
-        imageProvider = NetworkImage(profileImageUrl);
-      } else {
-        final File localFile = File(profileImageUrl);
-        if (localFile.existsSync()) {
-          imageProvider = FileImage(localFile);
-        } else {
-          imageProvider = null;
-        }
+    if (profilePhotoBase64.isNotEmpty) {
+      try {
+        imageProvider = MemoryImage(base64Decode(profilePhotoBase64));
+      } catch (e) {
+        print('Error decoding base64 image: $e');
+        imageProvider = null; // Fallback if decoding fails
       }
     }
 
@@ -292,6 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String dob,
     String bloodGroup,
     String? batchKe, // Added batchKe parameter
+    String jenisKelamin, // Added jenisKelamin parameter
   ) {
     return Card(
       color: AppColors.background,
@@ -314,6 +318,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Divider(color: AppColors.border, height: 20),
               _buildDetailRow('Batch', batchKe),
             ],
+            const Divider(color: AppColors.border, height: 20), // New Divider
+            _buildDetailRow(
+              'Jenis Kelamin',
+              jenisKelamin,
+            ), // New row for Jenis Kelamin
           ],
         ),
       ),
