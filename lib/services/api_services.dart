@@ -474,11 +474,10 @@ class ApiService {
     }
   }
 
-  // Updated Edit Profile method to include new fields
-  Future<ApiResponse<User>> editProfile({
-    String? name,
-    String? jenisKelamin, // New optional field
-    String? profilePhoto, // New optional field (base64 string)
+  // Modified: Update user name and gender
+  Future<ApiResponse<User>> updateProfile({
+    String? name, // Changed to optional
+    String? jenisKelamin, // Changed to optional
   }) async {
     final url = Uri.parse('$_baseUrl/profile');
     try {
@@ -488,9 +487,6 @@ class ApiService {
       }
       if (jenisKelamin != null) {
         body['jenis_kelamin'] = jenisKelamin;
-      }
-      if (profilePhoto != null) {
-        body['profile_photo'] = profilePhoto;
       }
 
       final response = await http.put(
@@ -510,6 +506,37 @@ class ApiService {
       } else {
         return ApiResponse.fromError(
           responseBody['message'] ?? 'Failed to update profile',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
+
+  // New: Update profile photo
+  Future<ApiResponse<User>> updateProfilePhoto({
+    required String profilePhoto, // Base64 string
+  }) async {
+    final url = Uri.parse('$_baseUrl/profile/photo');
+    try {
+      final response = await http.put(
+        url,
+        headers: _getHeaders(includeAuth: true),
+        body: jsonEncode({'profile_photo': profilePhoto}),
+      );
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: User.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to update profile photo',
           statusCode: response.statusCode,
           errors: responseBody['errors'],
         );

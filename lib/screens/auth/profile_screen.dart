@@ -1,5 +1,4 @@
 // lib/screens/profile/profile_screen.dart
-import 'dart:convert'; // Import for base64Decode
 
 import 'package:clockin_app/constants/app_colors.dart';
 import 'package:clockin_app/models/app_models.dart';
@@ -121,7 +120,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : _currentUser?.jenis_kelamin == 'P'
         ? 'Perempuan'
         : 'N/A';
-    final String profilePhotoBase64 = _currentUser?.profile_photo ?? '';
+    // Changed: profilePhotoUrl will now hold the URL/path from the API
+    final String profilePhotoUrl = _currentUser?.profile_photo ?? '';
 
     // These fields are not directly available in the current User model.
     // Using default placeholders. You might need to extend your User model
@@ -136,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String formattedJoinedDate = 'N/A';
     if (_currentUser?.createdAt != null) {
       formattedJoinedDate = DateFormat(
-        'MMM yyyy', // Corrected format string
+        'MMM dd, yyyy', // Corrected format string for better readability
       ).format(_currentUser!.createdAt!); // ADDED null assertion (!) here
     }
 
@@ -179,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       username,
                       designation,
                       formattedJoinedDate,
-                      profilePhotoBase64, // Pass base64 string
+                      profilePhotoUrl, // Pass URL/path string
                     ),
                     const SizedBox(height: 20), // Space between sections
                     // User Details Card
@@ -206,17 +206,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String username,
     String designation,
     String joinedDate,
-    String profilePhotoBase64, // Changed to base64 string
+    String profilePhotoPath, // Changed to profilePhotoPath
   ) {
     ImageProvider<Object>? imageProvider;
 
-    if (profilePhotoBase64.isNotEmpty) {
-      try {
-        imageProvider = MemoryImage(base64Decode(profilePhotoBase64));
-      } catch (e) {
-        print('Error decoding base64 image: $e');
-        imageProvider = null; // Fallback if decoding fails
-      }
+    // Construct full URL based on whether it's already a full URL or a relative path
+    if (profilePhotoPath.isNotEmpty) {
+      final String fullImageUrl = profilePhotoPath.startsWith('http')
+          ? profilePhotoPath
+          : 'https://appabsensi.mobileprojp.com/public/' +
+                profilePhotoPath; // Adjusted base path
+      imageProvider = NetworkImage(fullImageUrl);
     }
 
     return Column(

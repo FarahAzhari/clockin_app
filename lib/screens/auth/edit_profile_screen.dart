@@ -24,10 +24,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final ApiService _apiService = ApiService(); // Use ApiService
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _usernameController;
-  String? _selectedJenisKelamin; // New state for Jenis Kelamin
-  File? _pickedImage; // New state for picked profile photo file
-  String? _profilePhotoBase64; // New state for base64 encoded photo
+  late TextEditingController _nameController;
+  File? _pickedImage; // State for newly picked profile photo file
+  String? _profilePhotoBase64; // Base64 for the newly picked photo to upload
+  String? _initialProfilePhotoUrl; // To store the original URL from currentUser
 
   bool _isLoading = false; // Add loading state
 
@@ -35,28 +35,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     // Initialize controller with current user's name
-    _usernameController = TextEditingController(
+    _nameController = TextEditingController(
       text: widget.currentUser.name, // Use .name property
     );
 
-    // Initialize selected gender
-    _selectedJenisKelamin = widget.currentUser.jenis_kelamin;
-
-    // Initialize profile photo if available
-    if (widget.currentUser.profile_photo != null &&
-        widget.currentUser.profile_photo!.isNotEmpty) {
-      _profilePhotoBase64 = widget.currentUser.profile_photo;
-      // Note: We don't re-create a File object from base64 here
-      // as it's not directly used for display in the CircleAvatar
-      // and would require saving to a temp file, which is unnecessary
-      // unless you need to re-upload the *same* image file.
-      // We will use MemoryImage for display.
-    }
+    // Store the initial profile photo URL from the current user
+    _initialProfilePhotoUrl = widget.currentUser.profile_photo;
   }
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -69,7 +58,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() {
         _pickedImage = File(pickedFile.path);
       });
-      // Convert image to base64
+      // Convert image to base64 for upload
       List<int> imageBytes = await _pickedImage!.readAsBytes();
       _profilePhotoBase64 = base64Encode(imageBytes);
     }
@@ -83,49 +72,142 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isLoading = true; // Set loading to true
       });
 
-      final String newUsername = _usernameController.text.trim();
+      final String newName = _nameController.text.trim();
+      bool profileDetailsChanged = false;
+      bool profilePhotoChanged = false;
 
-      try {
-        // Call the editProfile method in ApiService
-        final ApiResponse<User> response = await _apiService.editProfile(
-          name: newUsername,
-          jenisKelamin: _selectedJenisKelamin, // Pass selected gender
-          profilePhoto: _profilePhotoBase64, // Pass base64 photo
-        );
+      // 1. Check if name or gender has changed and update
+      final bool nameChanged = newName != widget.currentUser.name;
 
-        if (!mounted) return; // Check if the widget is still in the tree
-
-        if (response.statusCode == 200 && response.data != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(response.message)));
-          Navigator.pop(context, true); // Pop with true to signal refresh
-        } else {
-          String errorMessage = response.message;
-          if (response.errors != null) {
-            response.errors!.forEach((key, value) {
-              errorMessage += '\n$key: ${(value as List).join(', ')}';
-            });
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update profile: $errorMessage')),
+      if (nameChanged) {
+        try {
+          final ApiResponse<User> response = await _apiService.updateProfile(
+            name: newName,
           );
+
+          if (response.statusCode == 200 && response.data != null) {
+            profileDetailsChanged = true;
+          } else {
+            String errorMessage = response.message;
+            if (response.errors != null) {
+              response.errors!.forEach((key, value) {
+                errorMessage += '\n$key: ${(value as List).join(', ')}';
+              });
+            }
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Failed to update profile details: $errorMessage',
+                  ),
+                ),
+              );
+            }
+            setState(() {
+              _isLoading = false;
+            });
+            return; // Stop if detail update fails
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('An error occurred updating details: $e')),
+            );
+          }
+          setState(() {
+            _isLoading = false;
+          });
+          return;
         }
-      } catch (e) {
-        if (!mounted) return;
+      }
+
+      // 2. Check if a new profile photo has been selected and upload
+      if (_pickedImage != null && _profilePhotoBase64 != null) {
+        try {
+          final ApiResponse<User> photoResponse = await _apiService
+              .updateProfilePhoto(profilePhoto: _profilePhotoBase64!);
+
+          if (photoResponse.statusCode == 200 && photoResponse.data != null) {
+            profilePhotoChanged = true;
+            // IMPORTANT: Update the initialProfilePhotoUrl with the new URL from the API response
+            if (photoResponse.data!.profile_photo != null) {
+              _initialProfilePhotoUrl = photoResponse.data!.profile_photo;
+            }
+            // Clear picked image and base64 as it's now saved and reflected by URL
+            _pickedImage = null;
+            _profilePhotoBase64 = null;
+          } else {
+            String errorMessage = photoResponse.message;
+            if (photoResponse.errors != null) {
+              photoResponse.errors!.forEach((key, value) {
+                errorMessage += '\n$key: ${(value as List).join(', ')}';
+              });
+            }
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Failed to update profile photo: $errorMessage',
+                  ),
+                ),
+              );
+            }
+            setState(() {
+              _isLoading = false;
+            });
+            return; // Stop if photo update fails
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('An error occurred updating photo: $e')),
+            );
+          }
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+
+      if (!mounted) return;
+
+      if (profileDetailsChanged || profilePhotoChanged) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully!")),
+        );
+        Navigator.pop(context, true); // Pop with true to signal refresh
+      } else {
+        // If no changes were made to either name/gender or photo
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
-      } finally {
-        setState(() {
-          _isLoading = false; // Set loading to false
-        });
+        ).showSnackBar(const SnackBar(content: Text("No changes to save.")));
       }
+
+      setState(() {
+        _isLoading = false; // Set loading to false
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Construct full URL for existing profile photo
+    ImageProvider<Object>? currentImageProvider;
+    if (_pickedImage != null) {
+      // If a new image is picked, use it
+      currentImageProvider = FileImage(_pickedImage!);
+    } else if (_initialProfilePhotoUrl != null &&
+        _initialProfilePhotoUrl!.isNotEmpty) {
+      // If no new image, but there's an initial URL, use NetworkImage
+      // Check if the URL is already a full URL or a relative path
+      final String fullImageUrl = _initialProfilePhotoUrl!.startsWith('http')
+          ? _initialProfilePhotoUrl!
+          : 'https://appabsensi.mobileprojp.com/public/' +
+                _initialProfilePhotoUrl!; // Adjust base path as needed
+      currentImageProvider = NetworkImage(fullImageUrl);
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -149,19 +231,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: CircleAvatar(
                         radius: 60,
                         backgroundColor: AppColors.primary.withOpacity(0.2),
-                        backgroundImage: _pickedImage != null
-                            ? FileImage(_pickedImage!)
-                            : (_profilePhotoBase64 != null &&
-                                          _profilePhotoBase64!.isNotEmpty
-                                      ? MemoryImage(
-                                          base64Decode(_profilePhotoBase64!),
-                                        )
-                                      : null)
-                                  as ImageProvider<Object>?,
-                        child:
-                            _pickedImage == null &&
-                                (_profilePhotoBase64 == null ||
-                                    _profilePhotoBase64!.isEmpty)
+                        backgroundImage:
+                            currentImageProvider, // Use the determined image provider
+                        child: currentImageProvider == null
                             ? const Icon(
                                 Icons.person,
                                 size: 60,
@@ -174,7 +246,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     TextButton(
                       onPressed: _pickImage,
                       child: Text(
-                        _pickedImage != null || _profilePhotoBase64 != null
+                        _pickedImage != null ||
+                                (_initialProfilePhotoUrl != null &&
+                                    _initialProfilePhotoUrl!.isNotEmpty)
                             ? 'Change Photo'
                             : 'Upload Photo',
                         style: const TextStyle(color: AppColors.primary),
@@ -188,32 +262,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ), // Space between image section and first input
               // Username (editable) using CustomInputField
               CustomInputField(
-                controller: _usernameController,
-                hintText: 'Username',
-                labelText: 'Username',
+                controller: _nameController,
+                hintText: 'Name',
+                labelText: 'Name',
                 icon: Icons.person,
                 customValidator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Username cannot be empty';
+                    return 'Name cannot be empty';
                   }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Email (display only - not editable via editProfile API)
-              CustomInputField(
-                controller: TextEditingController(
-                  text: widget.currentUser.email,
-                ),
-                hintText: 'Email',
-                labelText: 'Email',
-                icon: Icons.email,
-                keyboardType: TextInputType.emailAddress,
-                readOnly:
-                    true, // Make email read-only as it's not editable via this API
-                customValidator: (value) {
-                  // No validation needed for read-only field, but keeping for CustomInputField signature
                   return null;
                 },
               ),
