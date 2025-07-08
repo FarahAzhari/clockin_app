@@ -123,12 +123,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Changed: profilePhotoUrl will now hold the URL/path from the API
     final String profilePhotoUrl = _currentUser?.profile_photo ?? '';
 
-    // These fields are not directly available in the current User model.
-    // Using default placeholders. You might need to extend your User model
-    // or fetch these from a different API endpoint if they exist.
-    final String mobileNo = 'N/A';
-    final String dob = 'N/A';
-    final String bloodGroup = 'N/A';
     // Use training_title from API for designation
     final String designation = _currentUser?.training_title ?? 'Employee';
 
@@ -184,10 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 20), // Space between sections
                     // User Details Card
                     _buildUserDetailsCard(
-                      mobileNo,
                       email,
-                      dob,
-                      bloodGroup,
                       _currentUser?.batch_ke, // Pass batch_ke
                       jenisKelamin, // Pass jenisKelamin
                     ),
@@ -290,10 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildUserDetailsCard(
-    String mobileNo,
     String email,
-    String dob,
-    String bloodGroup,
     String? batchKe, // Added batchKe parameter
     String jenisKelamin, // Added jenisKelamin parameter
   ) {
@@ -306,13 +294,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildDetailRow('Mobile No.', mobileNo),
             const Divider(color: AppColors.border, height: 20),
             _buildDetailRow('Email ID', email),
-            const Divider(color: AppColors.border, height: 20),
-            _buildDetailRow('DOB', dob),
-            const Divider(color: AppColors.border, height: 20),
-            _buildDetailRow('Blood Group', bloodGroup),
             if (batchKe != null) ...[
               // Conditionally add batch info
               const Divider(color: AppColors.border, height: 20),
