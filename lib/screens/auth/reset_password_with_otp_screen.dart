@@ -1,3 +1,5 @@
+import 'dart:async'; // Import for Timer
+
 import 'package:clockin_app/constants/app_colors.dart';
 import 'package:clockin_app/constants/app_text_styles.dart';
 import 'package:clockin_app/routes/app_routes.dart';
@@ -24,12 +26,82 @@ class _ResetPasswordWithOtpScreenState
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final ApiService _apiService = ApiService();
+
   bool _isLoading = false;
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
+  // Timer related variables
+  Timer? _otpTimer;
+  int _remainingSeconds = 600; // 10 minutes in seconds
+
+  @override
+  void initState() {
+    super.initState();
+    _startOtpTimer();
+  }
+
+  @override
+  void dispose() {
+    _otpTimer?.cancel(); // Cancel the timer when the widget is disposed
+    _otpController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _startOtpTimer() {
+    _otpTimer?.cancel(); // Cancel any existing timer
+    _remainingSeconds = 600; // Reset to 10 minutes
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        _otpTimer?.cancel(); // Stop the timer when it reaches 0
+      }
+    });
+  }
+
+  String _formatTime(int seconds) {
+    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+    final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$remainingSeconds';
+  }
+
+  Future<void> _requestNewOtp() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final response = await _apiService.forgotPassword(email: widget.email);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (response.statusCode == 200) {
+      _showSnackBar(response.message);
+      _startOtpTimer(); // Restart the timer
+    } else {
+      String errorMessage = response.message;
+      if (response.errors != null) {
+        response.errors!.forEach((key, value) {
+          errorMessage += '\n$key: ${(value as List).join(', ')}';
+        });
+      }
+      _showSnackBar(errorMessage);
+    }
+  }
+
   Future<void> _resetPassword() async {
     if (_formKey.currentState!.validate()) {
+      if (_remainingSeconds == 0) {
+        _showSnackBar('OTP has expired. Please request a new one.');
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
@@ -38,9 +110,6 @@ class _ResetPasswordWithOtpScreenState
       final String newPassword = _newPasswordController.text.trim();
       final String confirmPassword = _confirmPasswordController.text.trim();
 
-      // First, verify OTP (though the reset-password endpoint might handle this implicitly)
-      // According to your API, the /reset-password endpoint takes email, otp, password, and password_confirmation
-      // so we can directly call resetPassword.
       final response = await _apiService.resetPassword(
         email: widget.email,
         otp: otp,
@@ -76,15 +145,9 @@ class _ResetPasswordWithOtpScreenState
   }
 
   @override
-  void dispose() {
-    _otpController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final bool otpExpired = _remainingSeconds == 0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -132,6 +195,20 @@ class _ResetPasswordWithOtpScreenState
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 10),
+              // OTP Timer display
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  otpExpired
+                      ? 'OTP Expired'
+                      : 'OTP expires in ${_formatTime(_remainingSeconds)}',
+                  style: TextStyle(
+                    color: otpExpired ? AppColors.error : AppColors.textLight,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               CustomInputField(
@@ -188,8 +265,28 @@ class _ResetPasswordWithOtpScreenState
                     )
                   : PrimaryButton(
                       label: 'Reset Password',
-                      onPressed: _resetPassword,
+                      onPressed: otpExpired
+                          ? () {}
+                          : () => _resetPassword(), // Changed null to () {}
                     ),
+              if (otpExpired)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Center(
+                    child: TextButton(
+                      onPressed: _isLoading
+                          ? () {}
+                          : () => _requestNewOtp(), // Changed null to () {}
+                      child: const Text(
+                        'Resend OTP',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
