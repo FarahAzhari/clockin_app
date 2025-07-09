@@ -1,5 +1,5 @@
 import 'package:clockin_app/constants/app_colors.dart';
-import 'package:clockin_app/models/app_models.dart';
+import 'package:clockin_app/models/app_models.dart'; // Ensure correct import for app_models.dart
 import 'package:clockin_app/services/api_services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
@@ -81,20 +81,15 @@ class _RequestScreenState extends State<RequestScreen> {
     });
 
     try {
-      // Format the selected date to YYYY-MM-DD
+      // Format the selected date to yyyy-MM-dd as required by the /izin API
       final String formattedDate = DateFormat(
         'yyyy-MM-dd',
       ).format(_selectedDate!);
 
-      // Call the modified checkIn method for 'izin' status
-      final ApiResponse<Absence> response = await _apiService.checkIn(
-        status: 'izin', // All requests are 'izin' status
+      // Call the dedicated submitIzinRequest method from ApiService
+      final ApiResponse<Absence> response = await _apiService.submitIzinRequest(
+        date: formattedDate, // Pass the formatted date as 'date'
         alasanIzin: _reasonController.text.trim(), // Only send the reason text
-        requestDate: formattedDate, // Pass the formatted date
-        // Location parameters are intentionally omitted/null for 'izin' requests
-        checkInLat: null,
-        checkInLng: null,
-        checkInAddress: null,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -144,9 +139,6 @@ class _RequestScreenState extends State<RequestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Removed location display as it's not needed for this request type
-            // Removed Request Type dropdown as it's not needed for this request type
-
             // Date Picker using CustomDateInputField
             CustomDateInputField(
               labelText: 'Select Date',

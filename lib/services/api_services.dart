@@ -672,4 +672,41 @@ class ApiService {
       return ApiResponse.fromError('An error occurred: $e');
     }
   }
+
+  // Submit Izin Request
+  Future<ApiResponse<Absence>> submitIzinRequest({
+    required String date, // Date for the izin request
+    required String alasanIzin, // Reason for the izin request
+  }) async {
+    final url = Uri.parse(
+      '$_baseUrl/izin',
+    ); // Dedicated endpoint for Izin requests
+    final body = {'date': date, 'alasan_izin': alasanIzin};
+
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(includeAuth: true),
+        body: jsonEncode(body),
+      );
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(
+          message: responseBody['message'],
+          data: Absence.fromJson(responseBody['data']),
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse.fromError(
+          responseBody['message'] ?? 'Failed to submit Izin request',
+          statusCode: response.statusCode,
+          errors: responseBody['errors'],
+        );
+      }
+    } catch (e) {
+      return ApiResponse.fromError('An error occurred: $e');
+    }
+  }
 }
