@@ -1,7 +1,9 @@
 import 'package:clockin_app/routes/app_routes.dart';
 import 'package:clockin_app/screens/attendance/request_screen.dart';
+import 'package:clockin_app/screens/auth/forgot_password_screen.dart';
 import 'package:clockin_app/screens/auth/login_screen.dart';
 import 'package:clockin_app/screens/auth/register_screen.dart';
+import 'package:clockin_app/screens/auth/reset_password_with_otp_screen.dart';
 import 'package:clockin_app/screens/main_bottom_navigation_bar.dart';
 import 'package:clockin_app/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,15 @@ class MyApp extends StatelessWidget {
         AppRoutes.register: (context) => const RegisterScreen(),
         AppRoutes.main: (context) => MainBottomNavigationBar(),
         AppRoutes.request: (context) => RequestScreen(),
+        AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
+        AppRoutes.resetPasswordWithOtp: (context) {
+          final email = ModalRoute.of(context)?.settings.arguments as String?;
+          if (email == null) {
+            // Handle case where email is not passed, maybe navigate back or show error
+            return const Text('Error: Email not provided for password reset.');
+          }
+          return ResetPasswordWithOtpScreen(email: email);
+        },
         // AppRoutes.attendanceList: (context) => AttendanceListScreen(),
         // AppRoutes.report: (context) => const PersonReportScreen(),
         // AppRoutes.profile: (context) => const ProfileScreen(),
