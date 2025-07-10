@@ -67,16 +67,16 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<Absence> fetchedAbsences = response.data!;
-        // Sort by created_at date in descending order (latest first)
+        // Sort by attendanceDate in descending order (latest first)
         fetchedAbsences.sort((a, b) {
-          // Handle null createdAt dates: nulls come last
-          if (a.createdAt == null && b.createdAt == null) return 0;
-          if (a.createdAt == null)
+          // Handle null attendanceDate dates: nulls come last
+          if (a.attendanceDate == null && b.attendanceDate == null) return 0;
+          if (a.attendanceDate == null)
             return 1; // a is null, b is not, a comes after b
-          if (b.createdAt == null)
+          if (b.attendanceDate == null)
             return -1; // b is null, a is not, b comes after a
-          return b.createdAt!.compareTo(
-            a.createdAt!,
+          return b.attendanceDate!.compareTo(
+            a.attendanceDate!,
           ); // Both are non-null, compare
         });
         return fetchedAbsences;
@@ -187,12 +187,12 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     bool showCheckIcon =
         absence.status?.toLowerCase() == 'masuk'; // Safely call toLowerCase
 
-    // Determine the date to display: use checkIn for attendance, createdAt for requests
+    // Determine the date to display: use attendanceDate for attendance, createdAt for requests
     final DateTime? displayDate = isRequestType
         ? absence.createdAt
-        : absence.checkIn;
+        : absence.attendanceDate; // Use attendanceDate for regular entries
     final String formattedDate = displayDate != null
-        ? DateFormat('E, MMM d,EEEE').format(displayDate)
+        ? DateFormat('E, MMM d, yyyy').format(displayDate) // Corrected format
         : 'N/A'; // Fallback for date
 
     return Card(
@@ -309,7 +309,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Text(
-                          'Reason: ${absence.alasanIzin?.split(':').last.trim() ?? 'N/A'}', // Display the reason part of alasan_izin
+                          'Reason: ${absence.alasanIzin?.isNotEmpty == true ? absence.alasanIzin : 'N/A'}', // Display the reason, handle empty string
                           style: TextStyle(
                             color: Colors.grey[700],
                             fontSize: 14,
