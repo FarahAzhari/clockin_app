@@ -187,10 +187,8 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     bool showCheckIcon =
         absence.status?.toLowerCase() == 'masuk'; // Safely call toLowerCase
 
-    // Determine the date to display: use attendanceDate for attendance, createdAt for requests
-    final DateTime? displayDate = isRequestType
-        ? absence.createdAt
-        : absence.attendanceDate; // Use attendanceDate for regular entries
+    // Always use attendanceDate for the display date
+    final DateTime? displayDate = absence.attendanceDate;
     final String formattedDate = displayDate != null
         ? DateFormat('E, MMM d, yyyy').format(displayDate) // Corrected format
         : 'N/A'; // Fallback for date
