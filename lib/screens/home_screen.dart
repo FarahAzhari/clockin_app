@@ -185,6 +185,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchAttendanceData() async {
+    // Refresh location data as part of the overall refresh
+    await _determinePosition();
+
     // Fetch today's absence record
     final ApiResponse<AbsenceToday> todayAbsenceResponse = await _apiService
         .getAbsenceToday();

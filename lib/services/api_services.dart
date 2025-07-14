@@ -437,9 +437,12 @@ class ApiService {
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        List<Absence> history = (responseBody['data'] as List)
-            .map((e) => Absence.fromJson(e))
-            .toList();
+        // Safely cast to List<dynamic> and provide an empty list if null
+        List<Absence> history =
+            (responseBody['data'] as List?)
+                ?.map((e) => Absence.fromJson(e))
+                .toList() ??
+            [];
         return ApiResponse(
           message: responseBody['message'],
           data: history,
