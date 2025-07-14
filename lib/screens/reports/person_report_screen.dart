@@ -68,35 +68,6 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
   // Fetches attendance data and calculates monthly summaries
   Future<void> _fetchAndCalculateMonthlyReports() async {
     try {
-      // 1. Fetch Absence Stats for summary counts
-      final ApiResponse<AbsenceStats> statsResponse = await _apiService
-          .getAbsenceStats();
-      if (statsResponse.statusCode == 200 && statsResponse.data != null) {
-        final AbsenceStats stats = statsResponse.data!;
-        setState(() {
-          _presentCount = stats.totalMasuk;
-          _absentCount = stats
-              .totalIzin; // Assuming total_izin covers all types of absences/leaves
-          _lateInCount =
-              stats.totalAbsen; // Assuming total_absen covers late entries
-          _totalWorkingDaysInMonth = stats
-              .totalMasuk; // Simplified: Total working days = total present days
-        });
-      } else {
-        print('Failed to get absence stats: ${statsResponse.message}');
-        _updateSummaryCounts(0, 0, 0, 0, '0hr'); // Reset counts on error
-        _updatePieChartData(0, 0, 0); // Reset pie chart data on error
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to load summary: ${statsResponse.message}'),
-            ),
-          );
-        }
-        return; // Exit if stats fetching fails
-      }
-
-      // 2. Fetch Absence History for total working hours calculation
       final String startDate = DateFormat('yyyy-MM-01').format(_selectedMonth);
       final String endDate = DateFormat('yyyy-MM-dd').format(
         DateTime(
@@ -106,31 +77,39 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
         ), // Last day of the month
       );
 
+      // Fetch Absence History for all calculations
       final ApiResponse<List<Absence>> historyResponse = await _apiService
           .getAbsenceHistory(startDate: startDate, endDate: endDate);
 
+      int presentCount = 0;
+      int absentCount = 0;
+      int lateInCount = 0; // Cannot derive from current history structure
       Duration totalWorkingDuration = Duration.zero;
+
       if (historyResponse.statusCode == 200 && historyResponse.data != null) {
         for (var absence in historyResponse.data!) {
-          // Only count working hours for 'masuk' entries that have both checkIn and checkOut
-          if (absence.status?.toLowerCase() ==
-                  'masuk' && // Safely call toLowerCase
-              absence.checkIn != null && // Added null check for checkIn
-              absence.checkOut != null) {
-            totalWorkingDuration += absence.checkOut!.difference(
-              absence.checkIn!, // Added null assertion for checkIn
-            );
+          if (absence.status?.toLowerCase() == 'masuk') {
+            presentCount++;
+            if (absence.checkIn != null && absence.checkOut != null) {
+              totalWorkingDuration += absence.checkOut!.difference(
+                absence.checkIn!,
+              );
+            }
+            // Note: Cannot determine 'lateInCount' from 'masuk' status alone without a rule (e.g., check-in time vs. shift start)
+            // If your API provides a way to mark 'late' within the history, add logic here.
+          } else if (absence.status?.toLowerCase() == 'izin') {
+            absentCount++;
           }
         }
       } else {
         print(
-          'Failed to get absence history for working hours: ${historyResponse.message}',
+          'Failed to get absence history for reports: ${historyResponse.message}',
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Failed to load working hours: ${historyResponse.message}',
+                'Failed to load reports: ${historyResponse.message}',
               ),
             ),
           );
@@ -142,11 +121,17 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
       String formattedTotalWorkingHours =
           '${totalHours}hr ${remainingMinutes}min';
 
+      // Total working days in month is the count of days a user was "present"
+      int totalWorkingDaysInMonth = presentCount;
+
       setState(() {
+        _presentCount = presentCount;
+        _absentCount = absentCount;
+        _lateInCount = lateInCount; // Will be 0 with current history data
+        _totalWorkingDaysInMonth = totalWorkingDaysInMonth;
         _totalWorkingHours = formattedTotalWorkingHours;
       });
 
-      // Update pie chart data after all counts are finalized
       _updatePieChartData(_presentCount, _absentCount, _lateInCount);
     } catch (e) {
       print('Error fetching and calculating monthly reports: $e');
@@ -402,7 +387,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                           children: [
                             Text(
                               DateFormat(
-                                'MMM BCE', // Corrected format string
+                                'MMM yyyy', // Corrected format string
                               ).format(_selectedMonth).toUpperCase(),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
