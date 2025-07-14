@@ -314,6 +314,7 @@ class AbsenceToday {
   final String? status; // Made nullable
   final String? alasanIzin;
   final DateTime? attendanceDate;
+  final bool sudahAbsenHariIni;
 
   AbsenceToday({
     this.tanggal, // Removed required
@@ -324,6 +325,7 @@ class AbsenceToday {
     this.status, // Removed required
     this.alasanIzin,
     this.attendanceDate,
+    this.sudahAbsenHariIni = false,
   });
 
   factory AbsenceToday.fromJson(Map<String, dynamic> json) {
@@ -368,6 +370,7 @@ class AbsenceToday {
       attendanceDate: attendanceDateStr != null
           ? DateTime.parse(attendanceDateStr)
           : null,
+      sudahAbsenHariIni: json['sudah_absen_hari_ini'] ?? false,
     );
   }
 }
