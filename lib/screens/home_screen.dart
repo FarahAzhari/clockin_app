@@ -797,7 +797,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     Text(
-                      DateFormat('MMM').format(DateTime.now()).toUpperCase(),
+                      DateFormat(
+                        'MMM yyyy',
+                      ).format(DateTime.now()).toUpperCase(),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textDark,
