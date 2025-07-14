@@ -414,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         _location,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -788,9 +788,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ), // Assuming 'total_izin' maps to absents/leaves
               const SizedBox(width: 10),
               _buildSummaryCard(
-                'Late in',
+                'Total',
                 _absenceStats?.totalAbsen ?? 0,
-                Colors.orange,
+                Colors.blue,
               ), // Assuming 'total_absen' maps to late/other
             ],
           ),
