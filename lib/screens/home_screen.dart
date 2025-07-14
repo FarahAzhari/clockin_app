@@ -497,25 +497,29 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          ListView(
-            padding: const EdgeInsets.only(top: 5),
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  'Welcome, $_userName',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          RefreshIndicator(
+            onRefresh:
+                _fetchAttendanceData, // This method will be called on pull-to-refresh
+            child: ListView(
+              padding: const EdgeInsets.only(top: 5),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Text(
+                    'Welcome, $_userName',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _buildMainActionCard(hasCheckedIn, hasCheckedOut),
-              const SizedBox(height: 20),
-              _buildAttendanceSummary(),
-            ],
+                const SizedBox(height: 20),
+                _buildMainActionCard(hasCheckedIn, hasCheckedOut),
+                const SizedBox(height: 20),
+                _buildAttendanceSummary(),
+              ],
+            ),
           ),
           Positioned(
             bottom: 10,
@@ -797,9 +801,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     Text(
-                      DateFormat(
-                        'MMM yyyy',
-                      ).format(DateTime.now()).toUpperCase(),
+                      DateFormat('MMM yyyy')
+                          .format(DateTime.now())
+                          .toUpperCase(), // Display current month and year
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textDark,
@@ -838,7 +842,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Total',
                 _absenceStats?.totalAbsen ?? 0,
                 Colors.blue,
-              ), // Assuming 'total_absen' maps to late/other
+              ), // Assuming 'total_absen' means total entries for the month
             ],
           ),
         ),
