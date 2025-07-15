@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clockin_app/constants/app_colors.dart';
 import 'package:clockin_app/models/app_models.dart';
+import 'package:clockin_app/screens/attendance/attendance_detail_screen.dart';
 import 'package:clockin_app/screens/main_bottom_navigation_bar.dart';
 import 'package:clockin_app/services/api_services.dart';
 import 'package:flutter/material.dart';
@@ -198,206 +199,216 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              width: 5.0,
-              decoration: BoxDecoration(
-                color: barColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AttendanceDetailScreen(attendance: absence),
+            ),
+          );
+        },
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: 5.0,
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    bottomLeft: Radius.circular(10),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          formattedDate,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            formattedDate,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isRequestType
-                                ? statusPillColor
-                                : statusPillColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Row(
-                            children: [
-                              if (showCheckIcon)
-                                const Padding(
-                                  padding: EdgeInsets.only(right: 4.0),
-                                  child: Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    size: 16,
-                                    color: Colors.black54,
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isRequestType
+                                  ? statusPillColor
+                                  : statusPillColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Row(
+                              children: [
+                                if (showCheckIcon)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 4.0),
+                                    child: Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      size: 16,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                Text(
+                                  isRequestType
+                                      ? 'IZIN' // Display "Izin" for request types
+                                      : absence.status?.toUpperCase() ??
+                                            'N/A', // Safely call toUpperCase
+                                  style: TextStyle(
+                                    color: isRequestType
+                                        ? Colors.white
+                                        : Colors.black54,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
                                   ),
                                 ),
-                              Text(
-                                isRequestType
-                                    ? 'IZIN' // Display "Izin" for request types
-                                    : absence.status?.toUpperCase() ??
-                                          'N/A', // Safely call toUpperCase
-                                style: TextStyle(
-                                  color: isRequestType
-                                      ? Colors.white
-                                      : Colors.black54,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (!isRequestType)
-                      Row(
-                        children: [
-                          _buildTimeColumn(
-                            absence.checkIn?.toLocal().toString().substring(
-                                  11,
-                                  19,
-                                ) ??
-                                'N/A', // Provide fallback for checkIn
-                            'Check In',
-                            timeTextColor,
-                          ),
-                          const SizedBox(width: 20),
-                          _buildTimeColumn(
-                            absence.checkOut?.toLocal().toString().substring(
-                                  11,
-                                  19,
-                                ) ??
-                                'N/A',
-                            'Check Out',
-                            timeTextColor,
-                          ),
-                          const SizedBox(width: 20),
-                          _buildTimeColumn(
-                            _calculateWorkingHours(
-                              absence.checkIn,
-                              absence.checkOut,
+                              ],
                             ),
-                            'Working HR\'s',
-                            timeTextColor,
                           ),
                         ],
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          'Reason: ${absence.alasanIzin?.isNotEmpty == true ? absence.alasanIzin : 'N/A'}', // Display the reason, handle empty string
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 14,
+                      ),
+                      const SizedBox(height: 8),
+                      if (!isRequestType)
+                        Row(
+                          children: [
+                            _buildTimeColumn(
+                              absence.checkIn?.toLocal().toString().substring(
+                                    11,
+                                    19,
+                                  ) ??
+                                  'N/A', // Provide fallback for checkIn
+                              'Check In',
+                              timeTextColor,
+                            ),
+                            const SizedBox(width: 20),
+                            _buildTimeColumn(
+                              absence.checkOut?.toLocal().toString().substring(
+                                    11,
+                                    19,
+                                  ) ??
+                                  'N/A',
+                              'Check Out',
+                              timeTextColor,
+                            ),
+                            const SizedBox(width: 20),
+                            _buildTimeColumn(
+                              _calculateWorkingHours(
+                                absence.checkIn,
+                                absence.checkOut,
+                              ),
+                              'Working HR\'s',
+                              timeTextColor,
+                            ),
+                          ],
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            'Reason: ${absence.alasanIzin?.isNotEmpty == true ? absence.alasanIzin : 'N/A'}', // Display the reason, handle empty string
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                icon: Icon(Icons.close, color: Colors.grey.withOpacity(0.7)),
-                onPressed: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: AppColors.background,
-                      title: const Text('Cancel Entry'),
-                      content: const Text(
-                        'Are you sure you want to cancel this entry?',
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.grey.withOpacity(0.7)),
+                  onPressed: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: AppColors.background,
+                        title: const Text('Cancel Entry'),
+                        content: const Text(
+                          'Are you sure you want to cancel this entry?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text(
+                              'No',
+                              style: TextStyle(color: AppColors.primary),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text(
+                              'Yes',
+                              style: TextStyle(color: AppColors.error),
+                            ),
+                          ),
+                        ],
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text(
-                            'No',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text(
-                            'Yes',
-                            style: TextStyle(color: AppColors.error),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
+                    );
 
-                  if (confirmed == true) {
-                    try {
-                      // Call deleteAbsence from ApiService
-                      final ApiResponse<Absence> deleteResponse =
-                          await _apiService.deleteAbsence(absence.id);
+                    if (confirmed == true) {
+                      try {
+                        // Call deleteAbsence from ApiService
+                        final ApiResponse<Absence> deleteResponse =
+                            await _apiService.deleteAbsence(absence.id);
 
-                      if (deleteResponse.statusCode == 200) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(deleteResponse.message)),
-                        );
-                        await _refreshList(); // Refresh the list after successful deletion
-                        MainBottomNavigationBar.refreshHomeNotifier.value =
-                            true; // Signal HomeScreen to refresh
-                      } else {
-                        String errorMessage = deleteResponse.message;
-                        if (deleteResponse.errors != null) {
-                          deleteResponse.errors!.forEach((key, value) {
-                            errorMessage +=
-                                '\n$key: ${(value as List).join(', ')}';
-                          });
+                        if (deleteResponse.statusCode == 200) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(deleteResponse.message)),
+                          );
+                          await _refreshList(); // Refresh the list after successful deletion
+                          MainBottomNavigationBar.refreshHomeNotifier.value =
+                              true; // Signal HomeScreen to refresh
+                        } else {
+                          String errorMessage = deleteResponse.message;
+                          if (deleteResponse.errors != null) {
+                            deleteResponse.errors!.forEach((key, value) {
+                              errorMessage +=
+                                  '\n$key: ${(value as List).join(', ')}';
+                            });
+                          }
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Failed to cancel entry: $errorMessage',
+                                ),
+                              ),
+                            );
+                          }
                         }
+                      } catch (e) {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Failed to cancel entry: $errorMessage',
+                                'An error occurred during cancellation: $e',
                               ),
                             ),
                           );
                         }
                       }
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'An error occurred during cancellation: $e',
-                            ),
-                          ),
-                        );
-                      }
                     }
-                  }
-                },
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -465,7 +476,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                       children: [
                         Text(
                           DateFormat(
-                            'MMM, yyyy', // Corrected format string
+                            'MMM yyyy', // Corrected format string
                           ).format(_selectedMonth).toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
