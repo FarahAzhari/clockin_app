@@ -130,7 +130,7 @@ class _RequestScreenState extends State<RequestScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('New Request'),
+        title: const Text('Permission Request'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),

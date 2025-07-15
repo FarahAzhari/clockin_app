@@ -544,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 icon: const Icon(Icons.add_task, color: AppColors.primary),
                 label: const Text(
-                  'Request',
+                  'Permission Request',
                   style: TextStyle(color: AppColors.primary, fontSize: 18),
                 ),
                 style: ElevatedButton.styleFrom(
