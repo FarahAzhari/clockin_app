@@ -357,8 +357,21 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<AbsenceStats>> getAbsenceStats() async {
-    final url = Uri.parse('$_baseUrl/absen/stats');
+  Future<ApiResponse<AbsenceStats>> getAbsenceStats({
+    String? startDate,
+    String? endDate,
+  }) async {
+    final Map<String, String> queryParams = {};
+    if (startDate != null) {
+      queryParams['start'] = startDate;
+    }
+    if (endDate != null) {
+      queryParams['end'] = endDate;
+    }
+
+    final url = Uri.parse(
+      '$_baseUrl/absen/stats',
+    ).replace(queryParameters: queryParams);
     try {
       final response = await http.get(
         url,

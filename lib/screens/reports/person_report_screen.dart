@@ -27,14 +27,12 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
     1,
   );
 
-  // Summary counts for the selected month - Initialized directly to avoid LateInitializationError
+  // Summary counts for the selected month
   int _presentCount = 0;
-  int _absentCount =
-      0; // Will now include all non-regular attendance types (izin)
-  int _lateInCount = 0; // Mapped from total_absen in AbsenceStats
-  int _totalWorkingDaysInMonth =
-      0; // Will be derived from presentCount for simplicity
-  String _totalWorkingHours = '0hr';
+  int _absentCount = 0;
+  int _totalEntriesCount = 0; // From total_absen in AbsenceStats
+  String _totalWorkingHours = '0hr 0min';
+  String _averageDailyWorkingHours = '0hr 0min'; // New: for average calculation
 
   // Data for Pie Chart
   List<PieChartSectionData> _pieChartSections = [];
@@ -77,66 +75,103 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
         ), // Last day of the month
       );
 
-      // Fetch Absence History for all calculations
+      // Initialize local variables for calculation
+      int localPresentCount = 0;
+      int localAbsentCount = 0;
+      int localTotalEntriesCount = 0;
+      Duration localTotalWorkingDuration = Duration.zero;
+
+      // --- 1. Fetch Absence Stats for summary counts ---
+      final ApiResponse<AbsenceStats> statsResponse = await _apiService
+          .getAbsenceStats(startDate: startDate, endDate: endDate);
+
+      if (statsResponse.statusCode == 200 && statsResponse.data != null) {
+        final AbsenceStats stats = statsResponse.data!;
+        localPresentCount = stats.totalMasuk;
+        localAbsentCount = stats.totalIzin;
+        localTotalEntriesCount = stats.totalAbsen;
+      } else {
+        print(
+          'Failed to get absence stats for reports: ${statsResponse.message}',
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load summary: ${statsResponse.message}'),
+            ),
+          );
+        }
+      }
+
+      // --- 2. Fetch Absence History for total working hours ---
       final ApiResponse<List<Absence>> historyResponse = await _apiService
           .getAbsenceHistory(startDate: startDate, endDate: endDate);
 
-      int presentCount = 0;
-      int absentCount = 0;
-      int lateInCount = 0; // Cannot derive from current history structure
-      Duration totalWorkingDuration = Duration.zero;
-
       if (historyResponse.statusCode == 200 && historyResponse.data != null) {
         for (var absence in historyResponse.data!) {
-          if (absence.status?.toLowerCase() == 'masuk') {
-            presentCount++;
-            if (absence.checkIn != null && absence.checkOut != null) {
-              totalWorkingDuration += absence.checkOut!.difference(
-                absence.checkIn!,
-              );
-            }
-            // Note: Cannot determine 'lateInCount' from 'masuk' status alone without a rule (e.g., check-in time vs. shift start)
-            // If your API provides a way to mark 'late' within the history, add logic here.
-          } else if (absence.status?.toLowerCase() == 'izin') {
-            absentCount++;
+          // Only calculate duration for 'masuk' entries that have both check-in and check-out times
+          if (absence.status?.toLowerCase() == 'masuk' &&
+              absence.checkIn != null &&
+              absence.checkOut != null) {
+            localTotalWorkingDuration += absence.checkOut!.difference(
+              absence.checkIn!,
+            );
           }
         }
       } else {
         print(
-          'Failed to get absence history for reports: ${historyResponse.message}',
+          'Failed to get absence history for working hours: ${historyResponse.message}',
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Failed to load reports: ${historyResponse.message}',
+                'Failed to load working hours: ${historyResponse.message}',
               ),
             ),
           );
         }
       }
 
-      final int totalHours = totalWorkingDuration.inHours;
-      final int remainingMinutes = totalWorkingDuration.inMinutes.remainder(60);
+      // Calculate formatted total working hours
+      final int totalHours = localTotalWorkingDuration.inHours;
+      final int remainingMinutes = localTotalWorkingDuration.inMinutes
+          .remainder(60);
       String formattedTotalWorkingHours =
           '${totalHours}hr ${remainingMinutes}min';
 
-      // Total working days in month is the count of days a user was "present"
-      int totalWorkingDaysInMonth = presentCount;
+      // Calculate Average Daily Working Hours
+      String averageDailyWorkingHours = '0hr 0min';
+      if (localPresentCount > 0) {
+        final double averageMinutes =
+            localTotalWorkingDuration.inMinutes / localPresentCount;
+        final int avgHours = averageMinutes ~/ 60; // Integer division
+        final int avgMinutes = (averageMinutes % 60)
+            .round(); // Remainder minutes
+        averageDailyWorkingHours = '${avgHours}hr ${avgMinutes}min';
+      }
 
       setState(() {
-        _presentCount = presentCount;
-        _absentCount = absentCount;
-        _lateInCount = lateInCount; // Will be 0 with current history data
-        _totalWorkingDaysInMonth = totalWorkingDaysInMonth;
+        _presentCount = localPresentCount;
+        _absentCount = localAbsentCount;
+        _totalEntriesCount = localTotalEntriesCount;
         _totalWorkingHours = formattedTotalWorkingHours;
+        _averageDailyWorkingHours = averageDailyWorkingHours;
       });
 
-      _updatePieChartData(_presentCount, _absentCount, _lateInCount);
+      // Update Pie Chart Data after all counts are finalized
+      _updatePieChartData(_presentCount, _absentCount);
     } catch (e) {
       print('Error fetching and calculating monthly reports: $e');
-      _updateSummaryCounts(0, 0, 0, 0, '0hr'); // Reset counts on error
-      _updatePieChartData(0, 0, 0); // Reset pie chart data on error
+      // Reset all counts on error
+      setState(() {
+        _presentCount = 0;
+        _absentCount = 0;
+        _totalEntriesCount = 0;
+        _totalWorkingHours = '0hr 0min';
+        _averageDailyWorkingHours = '0hr 0min';
+      });
+      _updatePieChartData(0, 0); // Reset pie chart data on error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred loading reports: $e')),
@@ -145,26 +180,9 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
     }
   }
 
-  // Updates the state variables for summary counts
-  void _updateSummaryCounts(
-    int present,
-    int absent,
-    int late,
-    int totalWorkingDays,
-    String totalHrs,
-  ) {
-    setState(() {
-      _presentCount = present;
-      _absentCount = absent;
-      _lateInCount = late;
-      _totalWorkingDaysInMonth = totalWorkingDays;
-      _totalWorkingHours = totalHrs;
-    });
-  }
-
-  // New method to update pie chart data
-  void _updatePieChartData(int presentCount, int absentCount, int lateInCount) {
-    final total = presentCount + absentCount + lateInCount;
+  // Method to update pie chart data
+  void _updatePieChartData(int presentCount, int absentCount) {
+    final total = presentCount + absentCount; // Only present and absent
     if (total == 0) {
       setState(() {
         _pieChartSections = [];
@@ -174,7 +192,6 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
 
     const Color presentColor = Colors.green;
     const Color absentColor = Colors.red;
-    const Color lateColor = Colors.orange;
 
     setState(() {
       _pieChartSections = [
@@ -204,20 +221,6 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
               color: Colors.white,
             ),
             badgeWidget: _buildBadge('Absent', absentColor),
-            badgePositionPercentageOffset: .98,
-          ),
-        if (lateInCount > 0)
-          PieChartSectionData(
-            color: lateColor,
-            value: lateInCount.toDouble(),
-            title: '${(lateInCount / total * 100).toStringAsFixed(1)}%',
-            radius: 50,
-            titleStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            badgeWidget: _buildBadge('Late', lateColor),
             badgePositionPercentageOffset: .98,
           ),
       ];
@@ -310,18 +313,26 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                     style: const TextStyle(
                       color: Colors.black87,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
+                    maxLines: 1, // Ensure title stays on one line
+                    overflow:
+                        TextOverflow.ellipsis, // Add ellipsis if it overflows
                   ),
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.bottomRight,
-                    child: Text(
-                      value.toString(),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20, // Slightly smaller for fit
+                    child: FittedBox(
+                      // Use FittedBox to prevent overflow for value
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        value.toString(),
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28, // Original font size
+                        ),
                       ),
                     ),
                   ),
@@ -419,33 +430,33 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                   childAspectRatio: 1.0,
                   children: [
                     _buildSummaryCard(
-                      'Total Working Days',
-                      _totalWorkingDaysInMonth.toString().padLeft(2, '0'),
-                      Colors.blueGrey,
-                    ),
-                    _buildSummaryCard(
-                      'Total Present Days',
+                      'Total Present',
                       _presentCount.toString().padLeft(2, '0'),
                       Colors.green,
                     ),
                     _buildSummaryCard(
-                      'Total Absent Days',
+                      'Total Absent',
                       _absentCount.toString().padLeft(2, '0'),
                       Colors.red,
                     ),
                     _buildSummaryCard(
-                      'Total Late Entries',
-                      _lateInCount.toString().padLeft(2, '0'),
-                      Colors.orange,
+                      'Total Entries', // Now distinct from Present/Absent
+                      _totalEntriesCount.toString().padLeft(2, '0'),
+                      Colors.blue,
                     ),
                     _buildSummaryCard(
-                      'Total Working Hours',
+                      'Total Hours',
                       _totalWorkingHours,
                       AppColors.primary,
                     ),
                     _buildSummaryCard(
-                      'Overall Attendance %',
-                      '${(_presentCount / (_totalWorkingDaysInMonth == 0 ? 1 : _totalWorkingDaysInMonth) * 100).toStringAsFixed(0)}%',
+                      'Avg. Hours', // New card
+                      _averageDailyWorkingHours,
+                      Colors.deepOrange, // New color for this card
+                    ),
+                    _buildSummaryCard(
+                      'Attendance %',
+                      '${(_presentCount / (_totalEntriesCount == 0 ? 1 : _totalEntriesCount) * 100).toStringAsFixed(0)}%', // Updated calculation
                       Colors.teal,
                     ),
                   ],
