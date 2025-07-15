@@ -34,6 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _permissionGranted = false;
   bool _isCheckingInOrOut = false; // To prevent multiple taps during API calls
 
+  // New: State for selected work mode (office or home)
+  String _selectedMode = 'office'; // Default to office
+
+  // New: Office location coordinates and radius for geofencing
+  // IMPORTANT: Replace these with your actual office coordinates and desired radius (in meters)
+  static const double _officeLatitude = -6.210881; // Example: Monas, Jakarta
+  static const double _officeLongitude = 106.812942; // Example: Monas, Jakarta
+  static const double _officeRadius = 100; // 100 meters radius
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleRefreshSignal() {
     if (widget.refreshNotifier.value) {
+      print('HomeScreen: Refresh signal received, refreshing list...');
       _fetchAttendanceData(); // Re-fetch data for the home screen
       widget.refreshNotifier.value = false; // Reset the notifier after handling
     }
@@ -218,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       print('--- End Debugging ---');
     } else {
+      print('Failed to get today\'s absence: ${todayAbsenceResponse.message}');
       setState(() {
         _todayAbsence = null; // Reset if no record or error
       });
@@ -263,6 +274,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // New: Helper to check if current location is within office radius
+  bool _isWithinOfficeLocation() {
+    if (_currentPosition == null) {
+      return false;
+    }
+    final double distance = Geolocator.distanceBetween(
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      _officeLatitude,
+      _officeLongitude,
+    );
+    return distance <= _officeRadius;
+  }
+
   Future<void> _handleCheckIn() async {
     if (!_permissionGranted || _currentPosition == null) {
       _showErrorDialog(
@@ -273,6 +298,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (_isCheckingInOrOut) return; // Prevent double tap
 
+    // New: Location check based on selected mode
+    if (_selectedMode == 'office' && !_isWithinOfficeLocation()) {
+      _showErrorDialog(
+        'You are not within the office location. Check-in is only allowed within the office for "Office" mode.',
+      );
+      return;
+    }
+
     setState(() {
       _isCheckingInOrOut = true;
     });
@@ -281,16 +314,19 @@ class _HomeScreenState extends State<HomeScreen> {
       final String formattedAttendanceDate = DateFormat(
         'yyyy-MM-dd',
       ).format(DateTime.now());
-      // Format the current time to 'HH:mm' string for the API
       final String formattedCheckInTime = DateFormat(
         'HH:mm',
       ).format(DateTime.now());
+
+      // Determine status based on selected mode: always 'masuk' for work-related check-ins
+      final String statusToSend =
+          'masuk'; // Changed from _selectedMode == 'office' ? 'masuk' : 'wfh';
 
       final ApiResponse<Absence> response = await _apiService.checkIn(
         checkInLat: _currentPosition!.latitude,
         checkInLng: _currentPosition!.longitude,
         checkInAddress: _location,
-        status: 'masuk', // Assuming 'masuk' for regular check-in
+        status: statusToSend, // Use 'masuk' for both office and home check-ins
         attendanceDate: formattedAttendanceDate,
         checkInTime: formattedCheckInTime,
       );
@@ -335,6 +371,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (_isCheckingInOrOut) return; // Prevent double tap
 
+    // New: Location check based on selected mode
+    if (_selectedMode == 'office' && !_isWithinOfficeLocation()) {
+      _showErrorDialog(
+        'You are not within the office location. Check-out is only allowed within the office for "Office" mode.',
+      );
+      return;
+    }
+
     setState(() {
       _isCheckingInOrOut = true;
     });
@@ -343,10 +387,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final String formattedAttendanceDate = DateFormat(
         'yyyy-MM-dd',
       ).format(DateTime.now());
-      // Format the current time to 'HH:mm' string for the API
       final String formattedCheckOutTime = DateFormat(
         'HH:mm',
       ).format(DateTime.now());
+
+      // Determine status based on selected mode: always 'masuk' for work-related check-outs
+      // final String statusToSend = 'masuk'; // Changed from _selectedMode == 'office' ? 'masuk' : 'wfh';
 
       final ApiResponse<Absence> response = await _apiService.checkOut(
         checkOutLat: _currentPosition!.latitude,
@@ -582,20 +628,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      // Handle Home button press - This might be for a specific location type
-                      // For now, it's a placeholder.
+                      setState(() {
+                        _selectedMode = 'home';
+                      });
                     },
-                    icon: const Icon(Icons.home, color: AppColors.primary),
-                    label: const Text(
+                    icon: Icon(
+                      Icons.home,
+                      color: _selectedMode == 'home'
+                          ? AppColors.primary
+                          : Colors.grey,
+                    ),
+                    label: Text(
                       'Home',
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(
+                        color: _selectedMode == 'home'
+                            ? AppColors.primary
+                            : Colors.grey,
+                      ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primary),
+                      side: BorderSide(
+                        color: _selectedMode == 'home'
+                            ? AppColors.primary
+                            : Colors.grey,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundColor: _selectedMode == 'home'
+                          ? AppColors.primary.withOpacity(0.1)
+                          : Colors.transparent,
                     ),
                   ),
                 ),
@@ -603,19 +665,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      // Handle Office button press - This might be for a specific location type
-                      // For now, it's a placeholder.
+                      setState(() {
+                        _selectedMode = 'office';
+                      });
                     },
-                    icon: const Icon(Icons.business, color: Colors.grey),
-                    label: const Text(
+                    icon: Icon(
+                      Icons.business,
+                      color: _selectedMode == 'office'
+                          ? AppColors.primary
+                          : Colors.grey,
+                    ),
+                    label: Text(
                       'Office',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(
+                        color: _selectedMode == 'office'
+                            ? AppColors.primary
+                            : Colors.grey,
+                      ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.grey),
+                      side: BorderSide(
+                        color: _selectedMode == 'office'
+                            ? AppColors.primary
+                            : Colors.grey,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
+                      backgroundColor: _selectedMode == 'office'
+                          ? AppColors.primary.withOpacity(0.1)
+                          : Colors.transparent,
                     ),
                   ),
                 ),
@@ -789,7 +868,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
+                  color: Colors.black87,
                 ),
               ),
               Container(
