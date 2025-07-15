@@ -3,6 +3,7 @@ import 'package:clockin_app/constants/app_text_styles.dart';
 import 'package:clockin_app/models/app_models.dart';
 import 'package:clockin_app/routes/app_routes.dart';
 import 'package:clockin_app/services/api_services.dart';
+import 'package:clockin_app/widgets/app_logo.dart';
 import 'package:clockin_app/widgets/custom_input_field.dart';
 import 'package:clockin_app/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
@@ -99,16 +100,13 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Center(
-                  child: Icon(Icons.lock, size: 100, color: AppColors.primary),
-                ),
-                const SizedBox(height: 20),
+                Center(child: AppLogo(height: 250, width: 250)),
                 const Text("Welcome Back", style: AppTextStyles.heading),
                 const SizedBox(height: 10),
                 const Text("Login to continue", style: AppTextStyles.normal),

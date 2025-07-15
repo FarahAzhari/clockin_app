@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:clockin_app/constants/app_colors.dart';
 import 'package:clockin_app/constants/app_text_styles.dart';
 import 'package:clockin_app/services/api_services.dart';
+import 'package:clockin_app/widgets/app_logo.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/app_routes.dart';
@@ -75,16 +76,16 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: const [
-              Icon(Icons.access_alarm, size: 90, color: AppColors.primary),
-              SizedBox(height: 20),
-              Text('ClockIn', style: AppTextStyles.heading),
+              AppLogo(height: 300, width: 300),
+              // SizedBox(height: 20),
+              // Text('ClockIn', style: AppTextStyles.heading),
+              // SizedBox(height: 10),
+              // Text(
+              //   'Welcome to the future of attendance!',
+              //   textAlign: TextAlign.center,
+              //   style: AppTextStyles.normal,
+              // ),
               SizedBox(height: 10),
-              Text(
-                'Welcome to the future of attendance!',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.normal,
-              ),
-              SizedBox(height: 30),
               CircularProgressIndicator(color: AppColors.primary),
             ],
           ),

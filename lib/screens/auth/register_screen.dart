@@ -206,234 +206,229 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Create Account",
-                      style: AppTextStyles.heading.copyWith(
-                        color: AppColors.primary,
-                        fontSize: 28,
-                      ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Create Account",
+                    style: AppTextStyles.heading.copyWith(
+                      color: AppColors.primary,
+                      fontSize: 28,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Join us to track your attendance effortlessly.",
-                      style: AppTextStyles.normal.copyWith(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Join us to track your attendance effortlessly.",
+                    style: AppTextStyles.normal.copyWith(
+                      color: Colors.grey[600],
+                      fontSize: 16,
                     ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 32),
 
-                    // Username
-                    CustomInputField(
-                      controller: _nameController,
-                      hintText: "Name",
-                      icon: Icons.person_outline,
-                      customValidator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Name cannot be empty';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                  // Username
+                  CustomInputField(
+                    controller: _nameController,
+                    hintText: "Name",
+                    icon: Icons.person_outline,
+                    customValidator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Name cannot be empty';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Email
-                    CustomInputField(
-                      controller: _emailController,
-                      hintText: "Email",
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      customValidator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Email cannot be empty';
-                        }
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                          return 'Enter a valid email address';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                  // Email
+                  CustomInputField(
+                    controller: _emailController,
+                    hintText: "Email",
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    customValidator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Email cannot be empty';
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Password
-                    CustomInputField(
-                      controller: _passwordController,
-                      hintText: "Password",
-                      icon: Icons.lock_outline,
-                      isPassword: true,
-                      obscureText: !_isPasswordVisible,
-                      toggleVisibility: () => setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      }),
-                      customValidator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Password cannot be empty';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters long';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                  // Password
+                  CustomInputField(
+                    controller: _passwordController,
+                    hintText: "Password",
+                    icon: Icons.lock_outline,
+                    isPassword: true,
+                    obscureText: !_isPasswordVisible,
+                    toggleVisibility: () => setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    }),
+                    customValidator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Password cannot be empty';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters long';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Confirm Password
-                    CustomInputField(
-                      controller: _confirmPasswordController,
-                      hintText: "Confirm Password",
-                      icon: Icons.lock_outline,
-                      isPassword: true,
-                      obscureText: !_isConfirmPasswordVisible,
-                      toggleVisibility: () => setState(() {
-                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                      }),
-                      customValidator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Confirm password cannot be empty';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                  // Confirm Password
+                  CustomInputField(
+                    controller: _confirmPasswordController,
+                    hintText: "Confirm Password",
+                    icon: Icons.lock_outline,
+                    isPassword: true,
+                    obscureText: !_isConfirmPasswordVisible,
+                    toggleVisibility: () => setState(() {
+                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                    }),
+                    customValidator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Confirm password cannot be empty';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Jenis Kelamin Dropdown
-                    CustomDropdownInputField<String>(
-                      labelText: 'Select Gender',
-                      hintText: 'Select Gender',
-                      icon: Icons.people_outline,
-                      value: _selectedGender,
-                      items: const [
-                        DropdownMenuItem(value: 'L', child: Text('Laki-laki')),
-                        DropdownMenuItem(value: 'P', child: Text('Perempuan')),
-                      ],
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedGender = newValue;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Please select your gender';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                  // Jenis Kelamin Dropdown
+                  CustomDropdownInputField<String>(
+                    labelText: 'Select Gender',
+                    hintText: 'Select Gender',
+                    icon: Icons.people_outline,
+                    value: _selectedGender,
+                    items: const [
+                      DropdownMenuItem(value: 'L', child: Text('Laki-laki')),
+                      DropdownMenuItem(value: 'P', child: Text('Perempuan')),
+                    ],
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedGender = newValue;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select your gender';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Display Batch Name (not a dropdown)
-                    _isLoading
-                        ? const Center(
-                            // child: CircularProgressIndicator(
-                            //   color: AppColors.primary,
-                            // ),
-                          )
-                        : Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 18,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.inputFill,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.group_outlined,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _selectedBatchName,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: AppColors.textDark,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                  // Display Batch Name (not a dropdown)
+                  _isLoading
+                      ? const Center(
+                          // child: CircularProgressIndicator(
+                          //   color: AppColors.primary,
+                          // ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 18,
                           ),
-                    const SizedBox(height: 16),
-
-                    // Training Dropdown using CustomDropdownInputField
-                    _isLoading
-                        ? const SizedBox.shrink()
-                        : CustomDropdownInputField<int>(
-                            labelText: 'Select Training',
-                            hintText: 'Select Training',
-                            icon: Icons.school_outlined,
-                            value: _selectedTrainingId,
-                            items: _trainings.map((training) {
-                              return DropdownMenuItem<int>(
-                                value: training.id,
-                                child: Text(training.title),
-                              );
-                            }).toList(),
-                            onChanged: (int? newValue) {
-                              setState(() {
-                                _selectedTrainingId = newValue;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null) {
-                                return 'Please select a training';
-                              }
-                              return null;
-                            },
-                            menuMaxHeight: 300.0, // Apply menuMaxHeight here
+                          decoration: BoxDecoration(
+                            color: AppColors.inputFill,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.border),
                           ),
-                    const SizedBox(height: 32),
-
-                    _isLoading
-                        ? const Center(
-                            // child: CircularProgressIndicator(
-                            //   color: AppColors.primary,
-                            // ),
-                          )
-                        : PrimaryButton(
-                            label: "Register",
-                            onPressed: _register,
-                          ),
-                    const SizedBox(height: 20),
-
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Already have an account? "),
-                          GestureDetector(
-                            onTap: () => Navigator.pushReplacementNamed(
-                              context,
-                              AppRoutes.login,
-                            ),
-                            child: const Text(
-                              "Login",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.group_outlined,
                                 color: AppColors.primary,
                               ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _selectedBatchName,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                  const SizedBox(height: 16),
+
+                  // Training Dropdown using CustomDropdownInputField
+                  _isLoading
+                      ? const SizedBox.shrink()
+                      : CustomDropdownInputField<int>(
+                          labelText: 'Select Training',
+                          hintText: 'Select Training',
+                          icon: Icons.school_outlined,
+                          value: _selectedTrainingId,
+                          items: _trainings.map((training) {
+                            return DropdownMenuItem<int>(
+                              value: training.id,
+                              child: Text(training.title),
+                            );
+                          }).toList(),
+                          onChanged: (int? newValue) {
+                            setState(() {
+                              _selectedTrainingId = newValue;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Please select a training';
+                            }
+                            return null;
+                          },
+                          menuMaxHeight: 300.0, // Apply menuMaxHeight here
+                        ),
+                  const SizedBox(height: 32),
+
+                  _isLoading
+                      ? const Center(
+                          // child: CircularProgressIndicator(
+                          //   color: AppColors.primary,
+                          // ),
+                        )
+                      : PrimaryButton(label: "Register", onPressed: _register),
+                  const SizedBox(height: 20),
+
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Already have an account? "),
+                        GestureDetector(
+                          onTap: () => Navigator.pushReplacementNamed(
+                            context,
+                            AppRoutes.login,
+                          ),
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
