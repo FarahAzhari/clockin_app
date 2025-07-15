@@ -36,6 +36,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
 
   // Data for Pie Chart
   List<PieChartSectionData> _pieChartSections = [];
+  bool _showNoDataMessage = false; // New: To control showing "No Data" message
 
   @override
   void initState() {
@@ -65,6 +66,11 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
 
   // Fetches attendance data and calculates monthly summaries
   Future<void> _fetchAndCalculateMonthlyReports() async {
+    // Reset no data message at the start of fetching new data
+    setState(() {
+      _showNoDataMessage = false;
+    });
+
     try {
       final String startDate = DateFormat('yyyy-MM-01').format(_selectedMonth);
       final String endDate = DateFormat('yyyy-MM-dd').format(
@@ -170,6 +176,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
         _totalEntriesCount = 0;
         _totalWorkingHours = '0hr 0min';
         _averageDailyWorkingHours = '0hr 0min';
+        _showNoDataMessage = true; // Show no data message on error
       });
       _updatePieChartData(0, 0); // Reset pie chart data on error
       if (mounted) {
@@ -186,6 +193,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
     if (total == 0) {
       setState(() {
         _pieChartSections = [];
+        _showNoDataMessage = true; // Show no data message
       });
       return;
     }
@@ -224,6 +232,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
             badgePositionPercentageOffset: .98,
           ),
       ];
+      _showNoDataMessage = false; // Hide no data message if there's data
     });
   }
 
@@ -478,26 +487,40 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                   aspectRatio: 1.5,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: PieChart(
-                      PieChartData(
-                        sections: _pieChartSections,
-                        borderData: FlBorderData(show: false),
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 40,
-                        pieTouchData: PieTouchData(
-                          touchCallback:
-                              (FlTouchEvent event, pieTouchResponse) {
-                                setState(() {
-                                  if (!event.isInterestedForInteractions ||
-                                      pieTouchResponse == null ||
-                                      pieTouchResponse.touchedSection == null) {
-                                    return;
-                                  }
-                                });
-                              },
-                        ),
-                      ),
-                    ),
+                    child:
+                        _showNoDataMessage // Conditional rendering
+                        ? Center(
+                            child: Text(
+                              'No Data Available for this Month',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textLight,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          )
+                        : PieChart(
+                            PieChartData(
+                              sections: _pieChartSections,
+                              borderData: FlBorderData(show: false),
+                              sectionsSpace: 2,
+                              centerSpaceRadius: 40,
+                              pieTouchData: PieTouchData(
+                                touchCallback:
+                                    (FlTouchEvent event, pieTouchResponse) {
+                                      setState(() {
+                                        if (!event
+                                                .isInterestedForInteractions ||
+                                            pieTouchResponse == null ||
+                                            pieTouchResponse.touchedSection ==
+                                                null) {
+                                          return;
+                                        }
+                                      });
+                                    },
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
