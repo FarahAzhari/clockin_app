@@ -310,7 +310,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                     style: const TextStyle(
                       color: Colors.black87,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 12,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -321,7 +321,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.bold,
-                        fontSize: 28, // Slightly smaller for fit
+                        fontSize: 20, // Slightly smaller for fit
                       ),
                     ),
                   ),
