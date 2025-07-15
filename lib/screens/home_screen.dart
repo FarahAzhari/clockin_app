@@ -184,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Modified to use getAbsenceStats for monthly summary
   Future<void> _fetchAttendanceData() async {
     // Refresh location data as part of the overall refresh
     await _determinePosition();
@@ -193,74 +194,73 @@ class _HomeScreenState extends State<HomeScreen> {
         .getAbsenceToday();
     if (todayAbsenceResponse.statusCode == 200 &&
         todayAbsenceResponse.data != null) {
-      setState(() {
-        _todayAbsence = todayAbsenceResponse.data;
-      });
+      final AbsenceToday fetchedTodayAbsence = todayAbsenceResponse.data!;
+      final String currentFormattedDate = DateFormat(
+        'yyyy-MM-dd',
+      ).format(DateTime.now());
+
+      final String? fetchedAttendanceDate =
+          fetchedTodayAbsence.attendanceDate != null
+          ? DateFormat('yyyy-MM-dd').format(fetchedTodayAbsence.attendanceDate!)
+          : null;
+      if (fetchedAttendanceDate == currentFormattedDate) {
+        setState(() {
+          _todayAbsence = fetchedTodayAbsence;
+        });
+        print('UI State: _todayAbsence set to fetched data for current day.');
+      } else {
+        setState(() {
+          _todayAbsence = null;
+        });
+        print(
+          'UI State: _todayAbsence set to null (data for different day or null date).',
+        );
+      }
+      print('--- End Debugging ---');
     } else {
-      print('Failed to get today\'s absence: ${todayAbsenceResponse.message}');
       setState(() {
         _todayAbsence = null; // Reset if no record or error
       });
     }
 
+    // --- NEW: Fetch attendance stats for the current month using getAbsenceStats ---
     final DateTime now = DateTime.now();
-
     final DateTime startOfMonth = DateTime(now.year, now.month, 1);
-    final DateTime endOfMonth = DateTime(now.year, now.month + 1, 0);
+    final DateTime endOfMonth = DateTime(
+      now.year,
+      now.month + 1,
+      0,
+    ); // Last day of current month
 
     final String formattedStartDate = DateFormat(
       'yyyy-MM-dd',
     ).format(startOfMonth);
     final String formattedEndDate = DateFormat('yyyy-MM-dd').format(endOfMonth);
 
-    // Fetch attendance history for the current month to calculate stats
-    final ApiResponse<List<Absence>> historyResponse = await _apiService
-        .getAbsenceHistory(
+    final ApiResponse<AbsenceStats> statsResponse = await _apiService
+        .getAbsenceStats(
           startDate: formattedStartDate,
           endDate: formattedEndDate,
         );
 
-    int presentCount = 0;
-    int absentCount = 0;
-    int totalCount = 0; // Represents total entries for the month
-
-    if (historyResponse.statusCode == 200 && historyResponse.data != null) {
-      for (var absence in historyResponse.data!) {
-        totalCount++; // Increment total count for each entry
-        if (absence.status?.toLowerCase() == 'masuk') {
-          presentCount++;
-        } else if (absence.status?.toLowerCase() == 'izin') {
-          absentCount++;
-        }
-        // Note: 'Late' entries are not explicitly distinguishable from the provided history
-        // If your API provides a way to mark 'late' within the history,
-        // you would add logic here to count them.
-      }
+    if (statsResponse.statusCode == 200 && statsResponse.data != null) {
+      setState(() {
+        _absenceStats = statsResponse.data;
+      });
     } else {
-      print(
-        'Failed to get absence history for home screen stats: ${historyResponse.message}',
-      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Failed to load monthly summary: ${historyResponse.message}',
+              'Failed to load monthly summary: ${statsResponse.message}',
             ),
           ),
         );
       }
+      setState(() {
+        _absenceStats = null; // Reset if no stats or error
+      });
     }
-
-    // Update _absenceStats with calculated values
-    setState(() {
-      _absenceStats = AbsenceStats(
-        totalMasuk: presentCount,
-        totalIzin: absentCount,
-        totalAbsen:
-            totalCount, // Assuming total_absen means total entries for the month
-        sudahAbsenHariIni: _todayAbsence?.sudahAbsenHariIni ?? false,
-      );
-    });
   }
 
   Future<void> _handleCheckIn() async {
@@ -883,16 +883,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
+                    maxLines: 1, // Ensure title stays on one line
+                    overflow:
+                        TextOverflow.ellipsis, // Add ellipsis if it overflows
                   ),
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.bottomRight,
-                    child: Text(
-                      count.toString().padLeft(2, '0'),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 32,
+                    child: FittedBox(
+                      // Use FittedBox to prevent overflow for value
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        count.toString().padLeft(2, '0'),
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32, // Original font size
+                        ),
                       ),
                     ),
                   ),
