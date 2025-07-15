@@ -430,21 +430,6 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () async {
-              // final result = await Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (_) => const AddTemporary()),
-              // );
-              // if (result == true) {
-              //   _refreshList();
-              //   MainBottomNavigationBar.refreshHomeNotifier.value = true;
-              // }
-            },
-            icon: const Icon(Icons.add),
-          ),
-        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,7 +465,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                       children: [
                         Text(
                           DateFormat(
-                            'MMM', // Corrected format string
+                            'MMM, yyyy', // Corrected format string
                           ).format(_selectedMonth).toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
