@@ -26,6 +26,7 @@ class CustomDropdownInputField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
+      dropdownColor: AppColors.background,
       value: value,
       hint: Text(
         hintText ?? 'Select ${labelText.toLowerCase()}',
