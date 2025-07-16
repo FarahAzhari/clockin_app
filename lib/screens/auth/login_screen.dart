@@ -107,9 +107,12 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(child: AppLogo(height: 250, width: 250)),
-                const Text("Welcome Back", style: AppTextStyles.heading),
+                const Text("Selamat Datang", style: AppTextStyles.heading),
                 const SizedBox(height: 10),
-                const Text("Login to continue", style: AppTextStyles.normal),
+                const Text(
+                  "Login untuk melanjutkan",
+                  style: AppTextStyles.normal,
+                ),
                 const SizedBox(height: 30),
 
                 // Email
@@ -119,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   icon: Icons.email_outlined,
                   customValidator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Email cannot be empty';
+                      return 'Email tidak boleh kosong';
                     }
                     return null;
                   },
@@ -140,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   customValidator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Password cannot be empty';
+                      return 'Password tidak boleh kosong';
                     }
                     return null;
                   },
@@ -154,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.pushNamed(context, AppRoutes.forgotPassword);
                     },
                     child: const Text(
-                      'Forgot Password?',
+                      'Lupa Password?',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -177,12 +180,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account? "),
+                    const Text("Belum Punya Akun? "),
                     GestureDetector(
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.register),
                       child: const Text(
-                        "Sign up",
+                        "Register",
                         style: TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
