@@ -203,15 +203,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // Check if the URL is already a full URL or a relative path
       final String fullImageUrl = _initialProfilePhotoUrl!.startsWith('http')
           ? _initialProfilePhotoUrl!
-          : 'https://appabsensi.mobileprojp.com/public/' +
-                _initialProfilePhotoUrl!; // Adjust base path as needed
+          : 'https://appabsensi.mobileprojp.com/public/${_initialProfilePhotoUrl!}'; // Adjust base path as needed
       currentImageProvider = NetworkImage(fullImageUrl);
     }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: const Text('Edit Profil'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -249,8 +248,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         _pickedImage != null ||
                                 (_initialProfilePhotoUrl != null &&
                                     _initialProfilePhotoUrl!.isNotEmpty)
-                            ? 'Change Photo'
-                            : 'Upload Photo',
+                            ? 'Ganti Foto'
+                            : 'Upload Foto',
                         style: const TextStyle(color: AppColors.primary),
                       ),
                     ),
@@ -263,12 +262,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Username (editable) using CustomInputField
               CustomInputField(
                 controller: _nameController,
-                hintText: 'Name',
-                labelText: 'Name',
+                hintText: 'Nama',
+                labelText: 'Nama',
                 icon: Icons.person,
                 customValidator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Name cannot be empty';
+                    return 'Nama tidak boleh kosong';
                   }
                   return null;
                 },
@@ -283,7 +282,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     )
                   : PrimaryButton(
-                      label: 'Save Profile',
+                      label: 'Simpan Profil',
                       onPressed: _saveProfile,
                     ),
             ],
