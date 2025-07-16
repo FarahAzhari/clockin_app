@@ -191,7 +191,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     // Always use attendanceDate for the display date
     final DateTime? displayDate = absence.attendanceDate;
     final String formattedDate = displayDate != null
-        ? DateFormat('E, d MMM, yyyy', 'id_ID').format(
+        ? DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(
             displayDate,
           ) // Corrected format
         : 'N/A'; // Fallback for date

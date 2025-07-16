@@ -19,7 +19,7 @@ class AttendanceDetailScreen extends StatelessWidget {
     if (dateTime == null) {
       return 'N/A';
     }
-    return DateFormat('EEEE, dd MMMM yyyy').format(dateTime.toLocal());
+    return DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(dateTime.toLocal());
   }
 
   String _calculateWorkingHours(DateTime? checkIn, DateTime? checkOut) {
@@ -61,7 +61,7 @@ class AttendanceDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDetailRow(
-                  'Date',
+                  'Tanggal',
                   _formatDate(attendance.attendanceDate),
                   Icons.calendar_today,
                 ),
@@ -79,43 +79,43 @@ class AttendanceDetailScreen extends StatelessWidget {
                 const Divider(),
                 if (!isRequestType) ...[
                   _buildDetailRow(
-                    'Check In Time',
+                    'Jam Masuk',
                     _formatDateTime(attendance.checkIn),
                     Icons.login,
                   ),
                   const Divider(),
                   _buildDetailRow(
-                    'Check In Location (Address)',
+                    'Check In Lokasi (Alamat)',
                     attendance.checkInAddress ?? 'N/A',
                     Icons.location_on,
                   ),
                   const Divider(),
                   _buildDetailRow(
-                    'Check In Location (Coordinates)',
+                    'Check In Lokasi (Kordinat)',
                     attendance.checkInLocation ?? 'N/A',
                     Icons.gps_fixed,
                   ),
                   const Divider(),
                   _buildDetailRow(
-                    'Check Out Time',
+                    'Jam Keluar',
                     _formatDateTime(attendance.checkIn),
                     Icons.logout,
                   ),
                   const Divider(),
                   _buildDetailRow(
-                    'Check Out Location (Address)',
+                    'Check Out Lokasi (Alamat)',
                     attendance.checkOutAddress ?? 'N/A',
                     Icons.location_on,
                   ),
                   const Divider(),
                   _buildDetailRow(
-                    'Check Out Location (Coordinates)',
+                    'Check Out Lokasi (Kordinat)',
                     attendance.checkOutLocation ?? 'N/A',
                     Icons.gps_fixed,
                   ),
                   const Divider(),
                   _buildDetailRow(
-                    'Working Hours',
+                    'Total Waktu',
                     _calculateWorkingHours(
                       attendance.checkIn,
                       attendance.checkOut,
