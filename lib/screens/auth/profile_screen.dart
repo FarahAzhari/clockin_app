@@ -131,7 +131,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final DateTime startDate = DateTime.parse(
           _currentUser!.batch!.startDate!,
         );
-        formattedJoinedDate = DateFormat('MMM dd, yyyy').format(startDate);
+        formattedJoinedDate = DateFormat(
+          'd MMMM yyyy',
+          'id_ID',
+        ).format(startDate);
       } catch (e) {
         print('Error parsing batch start date: $e');
         formattedJoinedDate = 'N/A';
@@ -141,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profil Saya'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -169,8 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ? const Center(
                   child: CircularProgressIndicator(), // Show loading indicator
                 )
-              : ListView(
-                  padding: const EdgeInsets.only(top: 20, bottom: 20),
+              : Column(
                   children: [
                     // Profile Header Section (Avatar, Name, Designation, Joined Date)
                     _buildProfileHeader(
@@ -187,7 +189,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       jenisKelamin, // Pass jenisKelamin
                     ),
                     const SizedBox(height: 20),
-
                     // Settings and Logout Options
                     _buildActionOptions(),
                   ],
@@ -216,6 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         // Profile Picture
+        SizedBox(height: 90),
         Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
@@ -274,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             Text(
-              'Joined $joinedDate', // Add "Joined " prefix here
+              'Bergabung: $joinedDate', // Add "Joined " prefix here
               style: const TextStyle(fontSize: 16, color: AppColors.textLight),
             ),
           ],
@@ -297,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildDetailRow('Email ID', email),
+            _buildDetailRow('Email', email),
             if (batchKe != null) ...[
               // Conditionally add batch info
               const Divider(color: AppColors.border, height: 20),
@@ -354,7 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: ListTile(
               leading: const Icon(Icons.settings, color: AppColors.primary),
               title: const Text(
-                'Settings',
+                'Edit Profil',
                 style: TextStyle(fontSize: 16, color: AppColors.textDark),
               ),
               trailing: const Icon(
