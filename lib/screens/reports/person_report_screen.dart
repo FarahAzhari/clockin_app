@@ -143,8 +143,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
       final int totalHours = localTotalWorkingDuration.inHours;
       final int remainingMinutes = localTotalWorkingDuration.inMinutes
           .remainder(60);
-      String formattedTotalWorkingHours =
-          '${totalHours}hr ${remainingMinutes}min';
+      String formattedTotalWorkingHours = '${totalHours}j ${remainingMinutes}m';
 
       // Calculate Average Daily Working Hours
       String averageDailyWorkingHours = '0hr 0min';
@@ -154,7 +153,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
         final int avgHours = averageMinutes ~/ 60; // Integer division
         final int avgMinutes = (averageMinutes % 60)
             .round(); // Remainder minutes
-        averageDailyWorkingHours = '${avgHours}hr ${avgMinutes}min';
+        averageDailyWorkingHours = '${avgHours}j ${avgMinutes}m';
       }
 
       setState(() {
@@ -214,7 +213,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
-            badgeWidget: _buildBadge('Present', presentColor),
+            badgeWidget: _buildBadge('Hadir', presentColor),
             badgePositionPercentageOffset: .98,
           ),
         if (absentCount > 0)
@@ -228,7 +227,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
-            badgeWidget: _buildBadge('Absent', absentColor),
+            badgeWidget: _buildBadge('Absen', absentColor),
             badgePositionPercentageOffset: .98,
           ),
       ];
@@ -359,7 +358,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Attendance Reports'),
+        title: const Text('Laporan Absensi'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -385,7 +384,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Monthly Summary',
+                      'Laporan Bulanan',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -407,7 +406,8 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                           children: [
                             Text(
                               DateFormat(
-                                'MMM yyyy', // Corrected format string
+                                'MMM yyyy',
+                                'id_ID', // Corrected format string
                               ).format(_selectedMonth).toUpperCase(),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -439,32 +439,32 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                   childAspectRatio: 1.0,
                   children: [
                     _buildSummaryCard(
-                      'Total Present',
+                      'Total Hadir',
                       _presentCount.toString().padLeft(2, '0'),
                       Colors.green,
                     ),
                     _buildSummaryCard(
-                      'Total Absent',
+                      'Total Absen',
                       _absentCount.toString().padLeft(2, '0'),
                       Colors.red,
                     ),
                     _buildSummaryCard(
-                      'Total Entries', // Now distinct from Present/Absent
+                      'Total Hari', // Now distinct from Present/Absent
                       _totalEntriesCount.toString().padLeft(2, '0'),
                       Colors.blue,
                     ),
                     _buildSummaryCard(
-                      'Total Hours',
+                      'Total Waktu',
                       _totalWorkingHours,
                       AppColors.primary,
                     ),
                     _buildSummaryCard(
-                      'Avg. Hours', // New card
+                      'Rata rata', // New card
                       _averageDailyWorkingHours,
                       Colors.deepOrange, // New color for this card
                     ),
                     _buildSummaryCard(
-                      'Attendance %',
+                      'Kehadiran %',
                       '${(_presentCount / (_totalEntriesCount == 0 ? 1 : _totalEntriesCount) * 100).toStringAsFixed(0)}%', // Updated calculation
                       Colors.teal,
                     ),
@@ -474,7 +474,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
               const Padding(
                 padding: EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 8.0),
                 child: Text(
-                  'Attendance Status Breakdown',
+                  'Rincian Status Kehadiran',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -491,7 +491,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
                         _showNoDataMessage // Conditional rendering
                         ? Center(
                             child: Text(
-                              'No Data Available for this Month',
+                              'Tidak Ada Data Pada Bulan Ini',
                               style: TextStyle(
                                 fontSize: 16,
                                 color: AppColors.textLight,

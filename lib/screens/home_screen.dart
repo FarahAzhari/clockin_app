@@ -687,8 +687,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                       : Text(
                           hasCheckedIn
-                              ? (hasCheckedOut ? 'Checked Out' : 'Check Out')
-                              : 'Check In',
+                              ? (hasCheckedOut ? 'Keluar' : 'Keluar')
+                              : 'Masuk',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -712,7 +712,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         19,
                       ) ??
                       'N/A',
-                  'Check In',
+                  'Jam Masuk',
                   AppColors.primary,
                 ),
                 _buildTimeDetail(
@@ -723,7 +723,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         19,
                       ) ??
                       'N/A',
-                  'Check Out',
+                  'Jam Keluar',
                   Colors.redAccent,
                 ),
                 _buildTimeDetail(
@@ -833,7 +833,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ), // Assuming 'total_izin' maps to absents/leaves
               const SizedBox(width: 10),
               _buildSummaryCard(
-                'Total Absen',
+                'Total Hari',
                 _absenceStats?.totalAbsen ?? 0,
                 Colors.blue,
               ), // Assuming 'total_absen' means total entries for the month
