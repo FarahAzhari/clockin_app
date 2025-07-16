@@ -34,13 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _permissionGranted = false;
   bool _isCheckingInOrOut = false; // To prevent multiple taps during API calls
 
-  // New: State for selected work mode (office or home)
-  String _selectedMode = 'office'; // Default to office
+  // Removed: _selectedMode state is no longer needed
 
   // New: Office location coordinates and radius for geofencing
   // IMPORTANT: Replace these with your actual office coordinates and desired radius (in meters)
-  static const double _officeLatitude = -6.210881; // Example: Monas, Jakarta
-  static const double _officeLongitude = 106.812942; // Example: Monas, Jakarta
+  static const double _officeLatitude =
+      -6.210881; // Example: PPKD, Jakarta Pusat
+  static const double _officeLongitude =
+      106.812942; // Example: PPKD, Jakarta Pusat
   static const double _officeRadius = 100; // 100 meters radius
 
   @override
@@ -259,6 +260,9 @@ class _HomeScreenState extends State<HomeScreen> {
         _absenceStats = statsResponse.data;
       });
     } else {
+      print(
+        'Failed to get absence stats for home screen: ${statsResponse.message}',
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -274,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // New: Helper to check if current location is within office radius
+  // Helper to check if current location is within office radius
   bool _isWithinOfficeLocation() {
     if (_currentPosition == null) {
       return false;
@@ -298,10 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (_isCheckingInOrOut) return; // Prevent double tap
 
-    // New: Location check based on selected mode
-    if (_selectedMode == 'office' && !_isWithinOfficeLocation()) {
+    // NEW LOGIC: Check if within office location
+    if (!_isWithinOfficeLocation()) {
       _showErrorDialog(
-        'You are not within the office location. Check-in is only allowed within the office for "Office" mode.',
+        'You are not within the office location. Check-in is only allowed within the office.',
       );
       return;
     }
@@ -318,15 +322,14 @@ class _HomeScreenState extends State<HomeScreen> {
         'HH:mm',
       ).format(DateTime.now());
 
-      // Determine status based on selected mode: always 'masuk' for work-related check-ins
-      final String statusToSend =
-          'masuk'; // Changed from _selectedMode == 'office' ? 'masuk' : 'wfh';
+      // Status is always 'masuk' for automated check-in
+      final String statusToSend = 'masuk';
 
       final ApiResponse<Absence> response = await _apiService.checkIn(
         checkInLat: _currentPosition!.latitude,
         checkInLng: _currentPosition!.longitude,
         checkInAddress: _location,
-        status: statusToSend, // Use 'masuk' for both office and home check-ins
+        status: statusToSend,
         attendanceDate: formattedAttendanceDate,
         checkInTime: formattedCheckInTime,
       );
@@ -371,10 +374,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (_isCheckingInOrOut) return; // Prevent double tap
 
-    // New: Location check based on selected mode
-    if (_selectedMode == 'office' && !_isWithinOfficeLocation()) {
+    // NEW LOGIC: Check if within office location
+    if (!_isWithinOfficeLocation()) {
       _showErrorDialog(
-        'You are not within the office location. Check-out is only allowed within the office for "Office" mode.',
+        'You are not within the office location. Check-out is only allowed within the office.',
       );
       return;
     }
@@ -390,9 +393,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final String formattedCheckOutTime = DateFormat(
         'HH:mm',
       ).format(DateTime.now());
-
-      // Determine status based on selected mode: always 'masuk' for work-related check-outs
-      // final String statusToSend = 'masuk'; // Changed from _selectedMode == 'office' ? 'masuk' : 'wfh';
 
       final ApiResponse<Absence> response = await _apiService.checkOut(
         checkOutLat: _currentPosition!.latitude,
@@ -622,85 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _selectedMode = 'home';
-                      });
-                    },
-                    icon: Icon(
-                      Icons.home,
-                      color: _selectedMode == 'home'
-                          ? AppColors.primary
-                          : Colors.grey,
-                    ),
-                    label: Text(
-                      'Home',
-                      style: TextStyle(
-                        color: _selectedMode == 'home'
-                            ? AppColors.primary
-                            : Colors.grey,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: _selectedMode == 'home'
-                            ? AppColors.primary
-                            : Colors.grey,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      backgroundColor: _selectedMode == 'home'
-                          ? AppColors.primary.withOpacity(0.1)
-                          : Colors.transparent,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _selectedMode = 'office';
-                      });
-                    },
-                    icon: Icon(
-                      Icons.business,
-                      color: _selectedMode == 'office'
-                          ? AppColors.primary
-                          : Colors.grey,
-                    ),
-                    label: Text(
-                      'Office',
-                      style: TextStyle(
-                        color: _selectedMode == 'office'
-                            ? AppColors.primary
-                            : Colors.grey,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: _selectedMode == 'office'
-                            ? AppColors.primary
-                            : Colors.grey,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      backgroundColor: _selectedMode == 'office'
-                          ? AppColors.primary.withOpacity(0.1)
-                          : Colors.transparent,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+            // Removed: Row with Home and Office buttons
             Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(
