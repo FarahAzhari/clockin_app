@@ -215,7 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Create Account",
+                    "Daftar Akun",
                     style: AppTextStyles.heading.copyWith(
                       color: AppColors.primary,
                       fontSize: 28,
@@ -223,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Join us to track your attendance effortlessly.",
+                    "Bergabunglah dengan kami untuk memantau kehadiran Anda dengan mudah.",
                     style: AppTextStyles.normal.copyWith(
                       color: Colors.grey[600],
                       fontSize: 16,
@@ -234,11 +234,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Username
                   CustomInputField(
                     controller: _nameController,
-                    hintText: "Name",
+                    hintText: "Nama",
                     icon: Icons.person_outline,
                     customValidator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Name cannot be empty';
+                        return 'Name tidak boleh kosong';
                       }
                       return null;
                     },
@@ -253,10 +253,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                     customValidator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Email cannot be empty';
+                        return 'Email tidak boleh kosong';
                       }
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Enter a valid email address';
+                        return 'Masukkan alamat email yang valid';
                       }
                       return null;
                     },
@@ -275,10 +275,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }),
                     customValidator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Password cannot be empty';
+                        return 'Password tidak boleh kosong';
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
+                        return 'Kata sandi harus terdiri dari setidaknya 6 karakter';
                       }
                       return null;
                     },
@@ -288,7 +288,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Confirm Password
                   CustomInputField(
                     controller: _confirmPasswordController,
-                    hintText: "Confirm Password",
+                    hintText: "Konfirmasi Password",
                     icon: Icons.lock_outline,
                     isPassword: true,
                     obscureText: !_isConfirmPasswordVisible,
@@ -297,10 +297,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }),
                     customValidator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Confirm password cannot be empty';
+                        return 'Konfirmasi password tidak boleh kosong';
                       }
                       if (value != _passwordController.text) {
-                        return 'Passwords do not match';
+                        return 'Password tidak sama';
                       }
                       return null;
                     },
@@ -309,8 +309,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   // Jenis Kelamin Dropdown
                   CustomDropdownInputField<String>(
-                    labelText: 'Select Gender',
-                    hintText: 'Select Gender',
+                    labelText: 'Pilih Jenis Kelamin',
+                    hintText: 'Pilih Jenis Kelamin',
                     icon: Icons.people_outline,
                     value: _selectedGender,
                     items: const [
@@ -324,7 +324,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select your gender';
+                        return 'Mohon Pilih Jenis Kelamin';
                       }
                       return null;
                     },
@@ -373,8 +373,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _isLoading
                       ? const SizedBox.shrink()
                       : CustomDropdownInputField<int>(
-                          labelText: 'Select Training',
-                          hintText: 'Select Training',
+                          labelText: 'Pilih Pelatihan',
+                          hintText: 'Pilih Pelatihan',
                           icon: Icons.school_outlined,
                           value: _selectedTrainingId,
                           items: _trainings.map((training) {
@@ -390,7 +390,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                           validator: (value) {
                             if (value == null) {
-                              return 'Please select a training';
+                              return 'Mohon Pilih Pelatihan';
                             }
                             return null;
                           },
@@ -411,7 +411,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Already have an account? "),
+                        const Text("Sudah Memiliki Akun? "),
                         GestureDetector(
                           onTap: () => Navigator.pushReplacementNamed(
                             context,
