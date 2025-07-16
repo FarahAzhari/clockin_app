@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
 
   String _userName = 'User';
-  String _location = 'Getting Location...';
+  String _location = 'Mendapatkan Lokasi...';
   String _currentDate = '';
   String _currentTime = '';
   Timer? _timer;
@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateDateTime() {
     final now = DateTime.now();
     setState(() {
-      _currentDate = DateFormat('EEEE, dd MMMM yyyy').format(now);
+      _currentDate = DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(now);
       _currentTime = DateFormat('HH:mm:ss').format(now);
     });
   }
@@ -501,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Location',
+                        'Lokasi',
                         style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                       Text(
@@ -545,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Text(
-                    'Welcome, $_userName',
+                    'Selamat Datang, $_userName',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -580,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 icon: const Icon(Icons.add_task, color: AppColors.primary),
                 label: const Text(
-                  'Permission Request',
+                  'Ajukan Izin',
                   style: TextStyle(color: AppColors.primary, fontSize: 18),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -624,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: const Text(
-                  'GENERAL SHIFT', // This seems static, keep as is
+                  'PPKD JAKARTA PUSAT', // This seems static, keep as is
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -729,7 +729,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildTimeDetail(
                   Icons.watch_later_outlined,
                   _calculateWorkingHours(),
-                  'Working HR\'s',
+                  'Total Waktu',
                   Colors.orange,
                 ),
               ],
@@ -776,7 +776,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Attendance for this Month',
+                'Kehadiran Bulan Ini',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -795,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     Text(
-                      DateFormat('MMM yyyy')
+                      DateFormat('MMM yyyy', 'id_ID')
                           .format(DateTime.now())
                           .toUpperCase(), // Display current month and year
                       style: const TextStyle(
@@ -821,19 +821,19 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               _buildSummaryCard(
-                'Present',
+                'Hadir',
                 _absenceStats?.totalMasuk ?? 0,
                 Colors.green,
               ),
               const SizedBox(width: 10),
               _buildSummaryCard(
-                'Absents',
+                'Absen',
                 _absenceStats?.totalIzin ?? 0,
                 Colors.red,
               ), // Assuming 'total_izin' maps to absents/leaves
               const SizedBox(width: 10),
               _buildSummaryCard(
-                'Total',
+                'Total Absen',
                 _absenceStats?.totalAbsen ?? 0,
                 Colors.blue,
               ), // Assuming 'total_absen' means total entries for the month

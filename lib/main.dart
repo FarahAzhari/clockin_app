@@ -7,8 +7,11 @@ import 'package:clockin_app/screens/auth/reset_password_with_otp_screen.dart';
 import 'package:clockin_app/screens/main_bottom_navigation_bar.dart';
 import 'package:clockin_app/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   runApp(const MyApp());
 }
 
