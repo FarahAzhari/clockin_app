@@ -43,7 +43,7 @@ class AttendanceDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Attendance Detail'),
+        title: const Text('Detail Kehadiran'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
