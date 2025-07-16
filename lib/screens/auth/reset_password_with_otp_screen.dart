@@ -98,7 +98,7 @@ class _ResetPasswordWithOtpScreenState
   Future<void> _resetPassword() async {
     if (_formKey.currentState!.validate()) {
       if (_remainingSeconds == 0) {
-        _showSnackBar('OTP has expired. Please request a new one.');
+        _showSnackBar('OTP kadaluarsa. Mohon ajukan yang baru.');
         return;
       }
 
@@ -164,12 +164,12 @@ class _ResetPasswordWithOtpScreenState
             children: [
               const SizedBox(height: 40),
               const Text(
-                "Enter OTP and New Password",
+                "Masukkan OTP dan Password yang baru",
                 style: AppTextStyles.heading,
               ),
               const SizedBox(height: 10),
               Text(
-                "An OTP has been sent to ${widget.email}. Please enter it below along with your new password.",
+                "OTP sudah terkirim ke ${widget.email}. Mohon masukkan OTP di bawah ini dengan password baru.",
                 style: AppTextStyles.normal,
               ),
               const SizedBox(height: 30),
@@ -178,7 +178,7 @@ class _ResetPasswordWithOtpScreenState
                   text: widget.email,
                 ), // Display email, not editable
                 hintText: 'Email',
-                labelText: 'Email Address',
+                labelText: 'Alamat Email',
                 icon: Icons.email_outlined,
                 readOnly: true,
               ),
@@ -191,7 +191,7 @@ class _ResetPasswordWithOtpScreenState
                 keyboardType: TextInputType.number,
                 customValidator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'OTP cannot be empty';
+                    return 'OTP tidak boleh kosong';
                   }
                   return null;
                 },
@@ -202,8 +202,8 @@ class _ResetPasswordWithOtpScreenState
                 alignment: Alignment.centerRight,
                 child: Text(
                   otpExpired
-                      ? 'OTP Expired'
-                      : 'OTP expires in ${_formatTime(_remainingSeconds)}',
+                      ? 'OTP Kadaluarsa'
+                      : 'OTP kadaluarsa dalam ${_formatTime(_remainingSeconds)}',
                   style: TextStyle(
                     color: otpExpired ? AppColors.error : AppColors.textLight,
                     fontWeight: FontWeight.bold,
@@ -213,8 +213,8 @@ class _ResetPasswordWithOtpScreenState
               const SizedBox(height: 20),
               CustomInputField(
                 controller: _newPasswordController,
-                hintText: 'New Password',
-                labelText: 'New Password',
+                hintText: 'Password Baru',
+                labelText: 'Password Baru',
                 icon: Icons.lock_outline,
                 isPassword: true,
                 obscureText: !_isNewPasswordVisible,
@@ -225,10 +225,10 @@ class _ResetPasswordWithOtpScreenState
                 },
                 customValidator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'New password cannot be empty';
+                    return 'Password baru tidak boleh kosong';
                   }
                   if (value.length < 8) {
-                    return 'Password must be at least 8 characters long';
+                    return 'Kata sandi harus terdiri dari setidaknya 6 karakter.';
                   }
                   return null;
                 },
@@ -236,8 +236,8 @@ class _ResetPasswordWithOtpScreenState
               const SizedBox(height: 20),
               CustomInputField(
                 controller: _confirmPasswordController,
-                hintText: 'Confirm New Password',
-                labelText: 'Confirm New Password',
+                hintText: 'Konfirmasi Password Baru',
+                labelText: 'Konfirmasi Password Baru',
                 icon: Icons.lock_outline,
                 isPassword: true,
                 obscureText: !_isConfirmPasswordVisible,
@@ -248,10 +248,10 @@ class _ResetPasswordWithOtpScreenState
                 },
                 customValidator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Confirm password cannot be empty';
+                    return 'Password baru tidak boleh kosong';
                   }
                   if (value != _newPasswordController.text) {
-                    return 'Passwords do not match';
+                    return 'Password tidak sama';
                   }
                   return null;
                 },
@@ -278,7 +278,7 @@ class _ResetPasswordWithOtpScreenState
                           ? () {}
                           : () => _requestNewOtp(), // Changed null to () {}
                       child: const Text(
-                        'Resend OTP',
+                        'Kirim Ulang OTP',
                         style: TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
