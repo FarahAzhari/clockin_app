@@ -130,7 +130,7 @@ class _RequestScreenState extends State<RequestScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Permission Request'),
+        title: const Text('Ajukan Izin'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
@@ -141,21 +141,20 @@ class _RequestScreenState extends State<RequestScreen> {
           children: [
             // Date Picker using CustomDateInputField
             CustomDateInputField(
-              labelText: 'Select Date',
+              labelText: 'Pilih Tanggal',
               icon: Icons.calendar_today,
               selectedDate: _selectedDate,
               onTap: () => _selectDate(context),
-              hintText: 'No date chosen', // Optional hint text
+              hintText: 'Tidak ada tanggal yang dipilih', // Optional hint text
             ),
             const SizedBox(height: 20),
 
             // Reason Text Field using CustomInputField
             CustomInputField(
               controller: _reasonController,
-              labelText:
-                  'Reason for Request', // This becomes the floating label
+              labelText: 'Alasan Izin', // This becomes the floating label
               hintText:
-                  'e.g., Annual leave, sick leave, personal matters', // This remains the hint text inside the field
+                  'Sakit, Urusan Pribadi', // This remains the hint text inside the field
               icon: Icons.edit_note,
               maxLines: 3, // Allow multiline input
               keyboardType:
@@ -181,7 +180,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     child: CircularProgressIndicator(color: AppColors.primary),
                   )
                 : PrimaryButton(
-                    label: 'Submit Request',
+                    label: 'Submit Izin',
                     onPressed: _submitRequest,
                   ),
           ],
