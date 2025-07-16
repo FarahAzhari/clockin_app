@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:clockin_app/constants/app_colors.dart';
-import 'package:clockin_app/constants/app_text_styles.dart';
 import 'package:clockin_app/services/api_services.dart';
 import 'package:clockin_app/widgets/app_logo.dart';
 import 'package:flutter/material.dart';

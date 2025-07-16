@@ -22,8 +22,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser; // Holds the full user data (from API)
   bool _isLoading = false; // Add loading state
 
-  bool _notificationEnabled = true; // State for the notification switch
-
   @override
   void initState() {
     super.initState();
@@ -211,8 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (profilePhotoPath.isNotEmpty) {
       final String fullImageUrl = profilePhotoPath.startsWith('http')
           ? profilePhotoPath
-          : 'https://appabsensi.mobileprojp.com/public/' +
-                profilePhotoPath; // Adjusted base path
+          : 'https://appabsensi.mobileprojp.com/public/$profilePhotoPath'; // Adjusted base path
       imageProvider = NetworkImage(fullImageUrl);
     }
 
@@ -346,42 +343,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
-          // Notification Toggle
-          Card(
-            color: AppColors.background,
-            margin: EdgeInsets.zero, // No extra margin for this card
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            elevation: 4,
-            child: ListTile(
-              leading: const Icon(
-                Icons.notifications,
-                color: AppColors.primary,
-              ),
-              title: const Text(
-                'Notification',
-                style: TextStyle(fontSize: 16, color: AppColors.textDark),
-              ),
-              trailing: Switch.adaptive(
-                value: _notificationEnabled,
-                onChanged: (bool newValue) {
-                  setState(() {
-                    _notificationEnabled = newValue;
-                  });
-                  // Add logic to save notification preference (e.g., to UserModel or SessionManager)
-                },
-                activeColor: AppColors.primary,
-              ),
-              onTap: () {
-                // Toggling the switch directly is often enough, but you can add more logic here.
-                setState(() {
-                  _notificationEnabled = !_notificationEnabled;
-                });
-              },
-            ),
-          ),
-          const SizedBox(height: 10), // Space between cards
           // Settings Option (now navigates to EditProfileScreen)
           Card(
             color: AppColors.background,

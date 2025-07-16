@@ -515,16 +515,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  onPressed: () {
-                    // Handle notification button press
-                  },
-                ),
               ],
             ),
           ),
