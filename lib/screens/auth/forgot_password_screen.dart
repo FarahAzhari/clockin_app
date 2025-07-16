@@ -20,7 +20,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _requestOtp() async {
     if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
-      _showSnackBar('Please enter a valid email address.');
+      _showSnackBar('Mohon masukkan alamat email yang valid');
       return;
     }
 
@@ -72,7 +72,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: const Text('Lupa Password'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
@@ -82,25 +82,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 40),
-            const Text("Reset Your Password", style: AppTextStyles.heading),
+            const Text("Reset Password", style: AppTextStyles.heading),
             const SizedBox(height: 10),
             const Text(
-              "Enter your email address to receive a one-time password (OTP).",
+              "Masukkan alamat email untuk menerima one-time password (OTP).",
               style: AppTextStyles.normal,
             ),
             const SizedBox(height: 30),
             CustomInputField(
               controller: _emailController,
               hintText: 'Email',
-              labelText: 'Email Address',
+              labelText: 'Alamat Email',
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               customValidator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Email cannot be empty';
+                  return 'Email tidak boleh kosong';
                 }
                 if (!value.contains('@')) {
-                  return 'Please enter a valid email address';
+                  return 'Mohon masukkan email yang valid';
                 }
                 return null;
               },
