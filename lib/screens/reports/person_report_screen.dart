@@ -358,6 +358,7 @@ class _PersonReportScreenState extends State<PersonReportScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Laporan Absensi'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
