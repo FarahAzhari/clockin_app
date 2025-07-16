@@ -191,7 +191,9 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     // Always use attendanceDate for the display date
     final DateTime? displayDate = absence.attendanceDate;
     final String formattedDate = displayDate != null
-        ? DateFormat('E, MMM d, yyyy').format(displayDate) // Corrected format
+        ? DateFormat('E, d MMM, yyyy', 'id_ID').format(
+            displayDate,
+          ) // Corrected format
         : 'N/A'; // Fallback for date
 
     return Card(
@@ -289,7 +291,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                     19,
                                   ) ??
                                   'N/A', // Provide fallback for checkIn
-                              'Check In',
+                              'Jam Masuk',
                               timeTextColor,
                             ),
                             const SizedBox(width: 20),
@@ -299,7 +301,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                     19,
                                   ) ??
                                   'N/A',
-                              'Check Out',
+                              'Jam Keluar',
                               timeTextColor,
                             ),
                             const SizedBox(width: 20),
@@ -308,7 +310,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                 absence.checkIn,
                                 absence.checkOut,
                               ),
-                              'Working HR\'s',
+                              'Total Waktu',
                               timeTextColor,
                             ),
                           ],
@@ -317,7 +319,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
-                            'Reason: ${absence.alasanIzin?.isNotEmpty == true ? absence.alasanIzin : 'N/A'}', // Display the reason, handle empty string
+                            'Alasan: ${absence.alasanIzin?.isNotEmpty == true ? absence.alasanIzin : 'N/A'}', // Display the reason, handle empty string
                             style: TextStyle(
                               color: Colors.grey[700],
                               fontSize: 14,
@@ -437,7 +439,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Attendance Details'),
+        title: const Text('Riwayat Absensi'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -454,7 +456,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Attendance Monthly',
+                  'Kehadiran Bulanan',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -476,7 +478,8 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                       children: [
                         Text(
                           DateFormat(
-                            'MMM yyyy', // Corrected format string
+                            'MMM yyyy',
+                            'id_ID',
                           ).format(_selectedMonth).toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
@@ -515,7 +518,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   if (attendances.isEmpty) {
                     return Center(
                       child: Text(
-                        'No attendance records found for ${DateFormat('MMMM').format(_selectedMonth)}.',
+                        'Tidak ada data pada bulan ${DateFormat('MMMM', 'id_ID').format(_selectedMonth)}.',
                       ),
                     );
                   }
