@@ -36,18 +36,18 @@ class CustomBottomNavigationBar extends StatelessWidget {
       type: BottomNavigationBarType
           .fixed, // Ensures all labels are always visible
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Dashboard'),
         BottomNavigationBarItem(
           icon: Icon(Icons.access_time), // Icon for attendance/clock-in
-          label: 'Attendance',
+          label: 'Riwayat',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.bar_chart), // Icon for reports/statistics
-          label: 'Reports',
+          label: 'Laporan',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person), // Icon for reports/statistics
-          label: 'Profile',
+          label: 'Profil',
         ),
       ],
     );
